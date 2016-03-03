@@ -25,7 +25,7 @@
         }
     },
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.5.9",
         "ramsey/uuid": "3.1.0",
         "nikic/fast-route": "0.7.0",
         "react/http": "0.4.1",
