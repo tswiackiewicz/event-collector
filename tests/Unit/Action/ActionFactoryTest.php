@@ -65,4 +65,65 @@ class ActionFactoryTest extends BaseTestCase
             '{"target":{"type":"unknown_type"}}'
         );
     }
+
+    /**
+     * @test
+     */
+    public function shouldCreateActionFromArray()
+    {
+        $factory = $this->createActionFactory();
+
+        $action = $factory->createFromArray(
+            'test_event',
+            [
+                '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
+                'name' => 'test_action',
+                'threshold' => 100,
+                'aggregation_key' => [],
+                'target' => [
+                    'type' => 'email',
+                    'to' => 'user@domain.com',
+                    'subject' => 'Test subject'
+                ]
+            ]
+        );
+
+        $this->assertInstanceOf(Action::class, $action);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidActionParameterExceptionIfActionTypeIsNotDefinedWhenCreatingFromArray()
+    {
+        $this->setExpectedException(InvalidActionParameterException::class);
+
+        $factory = $this->createActionFactory();
+
+        $factory->createFromArray(
+            'test_event',
+            [
+                'target' => []
+            ]
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowUnknownActionTypeExceptionIfActionTypeIsUnknownWhenCreatingFromArray()
+    {
+        $this->setExpectedException(UnknownActionTypeException::class);
+
+        $factory = $this->createActionFactory();
+
+        $factory->createFromArray(
+            'test_event',
+            [
+                'target' => [
+                    'type' => 'unknown_type'
+                ]
+            ]
+        );
+    }
 }

@@ -82,15 +82,6 @@ class Event
     }
 
     /**
-     * @param array $eventConfiguration
-     * @return Event
-     */
-    public static function createFromArray(array $eventConfiguration)
-    {
-        // TODO
-    }
-
-    /**
      * @param Collector $collector
      * @throws CollectorAlreadyRegisteredException
      */

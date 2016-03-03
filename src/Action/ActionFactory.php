@@ -6,6 +6,7 @@ use TSwiackiewicz\EventsCollector\Action\Email\EmailActionTarget;
 use TSwiackiewicz\EventsCollector\Action\Exception\InvalidActionParameterException;
 use TSwiackiewicz\EventsCollector\Action\Exception\UnknownActionTypeException;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
+use TSwiackiewicz\EventsCollector\Uuid;
 
 /**
  * Class ActionFactory
@@ -32,6 +33,41 @@ class ActionFactory
         switch ($type) {
             case EmailActionTarget::EMAIL_ACTION:
                 return Action::create(
+                    $payload->getValue('name'),
+                    $event,
+                    $payload->getValue('threshold'),
+                    $payload->getValue('aggregation_key'),
+                    EmailActionTarget::create(
+                        $payload->getValue('target.parameters')
+                    )
+                );
+        }
+
+        throw new UnknownActionTypeException(JsonResponse::HTTP_BAD_REQUEST, 'Unknown action type: `' . $type . '`');
+    }
+
+    /**
+     * @param string $event
+     * @param $actionConfiguration
+     * @return Action
+     * @throws InvalidActionParameterException
+     * @throws UnknownActionTypeException
+     */
+    public function createFromArray($event, $actionConfiguration)
+    {
+        $payload = RequestPayload::fromJson(
+            json_encode($actionConfiguration)
+        );
+        $type = $payload->getValue('target.type');
+
+        if (empty($type)) {
+            throw new InvalidActionParameterException(JsonResponse::HTTP_BAD_REQUEST, 'Action type is required');
+        }
+
+        switch ($type) {
+            case EmailActionTarget::EMAIL_ACTION:
+                return new Action(
+                    new Uuid($payload->getValue('_id')),
                     $payload->getValue('name'),
                     $event,
                     $payload->getValue('threshold'),

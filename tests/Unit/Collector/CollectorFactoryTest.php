@@ -65,4 +65,62 @@ class CollectorFactoryTest extends BaseTestCase
             '{"target":{"type":"unknown_type"}}'
         );
     }
+
+    /**
+     * @test
+     */
+    public function shouldCreateActionFromArray()
+    {
+        $factory = $this->createCollectorFactory();
+
+        $action = $factory->createFromArray(
+            'test_event',
+            [
+                '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
+                'name' => 'test_collector',
+                'target' => [
+                    'type' => 'syslog',
+                    'ident' => 'test'
+                ]
+            ]
+        );
+
+        $this->assertInstanceOf(Collector::class, $action);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidCollectorParameterExceptionIfCollectorTypeIsNotDefinedWhenCreatingFromArray()
+    {
+        $this->setExpectedException(InvalidCollectorParameterException::class);
+
+        $factory = $this->createCollectorFactory();
+
+        $factory->createFromArray(
+            'test_event',
+            [
+                'target' => []
+            ]
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowUnknownCollectorTypeExceptionIfCollectorTypeIsUnknownWhenCreatingFromArray()
+    {
+        $this->setExpectedException(UnknownCollectorTypeException::class);
+
+        $factory = $this->createCollectorFactory();
+
+        $factory->createFromArray(
+            'test_event',
+            [
+                'target' => [
+                    'type' => 'unknown_type'
+                ]
+            ]
+        );
+    }
 }

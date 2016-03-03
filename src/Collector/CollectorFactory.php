@@ -6,6 +6,7 @@ use TSwiackiewicz\EventsCollector\Collector\Exception\InvalidCollectorParameterE
 use TSwiackiewicz\EventsCollector\Collector\Exception\UnknownCollectorTypeException;
 use TSwiackiewicz\EventsCollector\Collector\Syslog\SyslogCollectorTarget;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
+use TSwiackiewicz\EventsCollector\Uuid;
 
 /**
  * Class CollectorFactory
@@ -32,6 +33,39 @@ class CollectorFactory
         switch ($type) {
             case SyslogCollectorTarget::SYSLOG_COLLECTOR:
                 return Collector::create(
+                    $payload->getValue('name'),
+                    $event,
+                    SyslogCollectorTarget::create(
+                        $payload->getValue('target.parameters')
+                    )
+                );
+        }
+
+        throw new UnknownCollectorTypeException(JsonResponse::HTTP_BAD_REQUEST, 'Unknown collector type: `' . $type . '`');
+    }
+
+    /**
+     * @param string $event
+     * @param array $collectorConfiguration
+     * @return Collector
+     * @throws InvalidCollectorParameterException
+     * @throws UnknownCollectorTypeException
+     */
+    public function createFromArray($event, array $collectorConfiguration)
+    {
+        $payload = RequestPayload::fromJson(
+            json_encode($collectorConfiguration)
+        );
+        $type = $payload->getValue('target.type');
+
+        if (empty($type)) {
+            throw new InvalidCollectorParameterException(JsonResponse::HTTP_BAD_REQUEST, 'Collector type is required');
+        }
+
+        switch ($type) {
+            case SyslogCollectorTarget::SYSLOG_COLLECTOR:
+                return new Collector(
+                    new Uuid($payload->getValue('_id')),
                     $payload->getValue('name'),
                     $event,
                     SyslogCollectorTarget::create(

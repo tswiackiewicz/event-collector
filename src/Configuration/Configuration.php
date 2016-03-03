@@ -7,6 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 use TSwiackiewicz\EventsCollector\Action\Action;
 use TSwiackiewicz\EventsCollector\Collector\Collector;
 use TSwiackiewicz\EventsCollector\Event\Event;
+use TSwiackiewicz\EventsCollector\Event\EventFactory;
 use TSwiackiewicz\EventsCollector\Event\Exception\EventTypeAlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Event\Exception\InvalidEventParameterException;
 use TSwiackiewicz\EventsCollector\Event\Exception\NotRegisteredEventTypeException;
@@ -32,8 +33,9 @@ class Configuration
 
         $parsedConfiguration = Yaml::parse(file_get_contents($file));
         if (is_array($parsedConfiguration)) {
+            $factory = new EventFactory();
             foreach ($parsedConfiguration as $eventConfiguration) {
-                $event = Event::createFromArray($eventConfiguration);
+                $event = $factory->createFromArray($eventConfiguration);
                 $configuration->events[$event->getType()] = $event;
             }
         }
