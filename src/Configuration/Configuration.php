@@ -3,6 +3,7 @@
 namespace TSwiackiewicz\EventsCollector\Configuration;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Yaml\Yaml;
 use TSwiackiewicz\EventsCollector\Action\Action;
 use TSwiackiewicz\EventsCollector\Collector\Collector;
 use TSwiackiewicz\EventsCollector\Event\Event;
@@ -20,6 +21,38 @@ class Configuration
      * @var Event[]
      */
     private $events = [];
+
+    /**
+     * @param string $file
+     * @return Configuration
+     */
+    public static function loadFromFile($file)
+    {
+        $configuration = new Configuration();
+
+        $parsedConfiguration = Yaml::parse(file_get_contents($file));
+        if (is_array($parsedConfiguration)) {
+            foreach ($parsedConfiguration as $eventConfiguration) {
+                $event = Event::createFromArray($eventConfiguration);
+                $configuration->events[$event->getType()] = $event;
+            }
+        }
+
+        return $configuration;
+    }
+
+    /**
+     * @param string $file
+     */
+    public function dump($file)
+    {
+        $dump = [];
+        foreach ($this->events as $eventType => $event) {
+            $dump[] = $event->dump();
+        }
+
+        file_put_contents($file, Yaml::dump($dump));
+    }
 
     /**
      * @return Event[]

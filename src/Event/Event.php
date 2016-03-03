@@ -82,6 +82,15 @@ class Event
     }
 
     /**
+     * @param array $eventConfiguration
+     * @return Event
+     */
+    public static function createFromArray(array $eventConfiguration)
+    {
+        // TODO
+    }
+
+    /**
      * @param Collector $collector
      * @throws CollectorAlreadyRegisteredException
      */
@@ -206,6 +215,29 @@ class Event
                 '_id' => $action->getId(),
                 'name' => $action->getName()
             ];
+        }
+
+        return [
+            '_id' => $this->getId(),
+            'type' => $this->getType(),
+            'collectors' => $collectors,
+            'actions' => $actions
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function dump()
+    {
+        $collectors = [];
+        foreach ($this->collectors as $collector) {
+            $collectors[] = $collector->toArray();
+        }
+
+        $actions = [];
+        foreach ($this->actions as $action) {
+            $actions[] = $action->toArray();
         }
 
         return [

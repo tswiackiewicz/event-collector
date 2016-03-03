@@ -4,6 +4,7 @@ namespace TSwiackiewicz\EventsCollector;
 use FastRoute\Dispatcher as FastRouteDispatcher;
 use FastRoute\Dispatcher\GroupCountBased as FastRouteGroupCountBasedDispatcher;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Http\Request as HttpRequest;
 use React\Http\Response as HttpResponse;
 use React\Http\Server as HttpServer;
@@ -19,19 +20,27 @@ class Server
     private $dispatcher;
 
     /**
-     * @param Dispatcher $dispatcher
+     * @var string
      */
-    public function __construct(Dispatcher $dispatcher)
+    private $configurationDumpFile;
+
+    /**
+     * @param Dispatcher $dispatcher
+     * @param string $configurationDumpFile
+     */
+    public function __construct(Dispatcher $dispatcher, $configurationDumpFile)
     {
         $this->dispatcher = $dispatcher;
+        $this->configurationDumpFile = $configurationDumpFile;
     }
 
     /**
      * @param RoutesCollection $routes
      * @param Configuration $configuration
+     * @param string $configurationDumpFile
      * @return Server
      */
-    public static function create(RoutesCollection $routes, Configuration $configuration)
+    public static function create(RoutesCollection $routes, Configuration $configuration, $configurationDumpFile)
     {
         return new Server(
             new Dispatcher(
@@ -39,7 +48,8 @@ class Server
                     $routes->getRoutes()
                 ),
                 $configuration
-            )
+            ),
+            $configurationDumpFile
         );
     }
 
@@ -52,15 +62,29 @@ class Server
         $loop = Factory::create();
 
         $socket = new SocketServer($loop);
+
         $http = new HttpServer($socket);
-
         $http->on('request', [$this, 'onRequest']);
-
-        echo("Server running on {$host}:{$port}\n");
 
         $socket->listen($port, $host);
 
+        $this->dumpConfiguration($loop);
+
         $loop->run();
+    }
+
+    /**
+     * @param LoopInterface $loop
+     */
+    private function dumpConfiguration(LoopInterface $loop)
+    {
+        $interval = 10;
+
+        $configuration = $this->dispatcher->getConfiguration();
+        $dumpFile = $this->configurationDumpFile;
+        $loop->addPeriodicTimer($interval, function () use ($configuration, $dumpFile) {
+            $configuration->dump($dumpFile);
+        });
     }
 
     public function onRequest(HttpRequest $request, HttpResponse $response)

@@ -116,6 +116,15 @@ class Action
     }
 
     /**
+     * @param array $actionConfiguration
+     * @return Action
+     */
+    public static function createFromArray(array $actionConfiguration)
+    {
+        // TODO
+    }
+
+    /**
      * @return string
      */
     public function getEvent()

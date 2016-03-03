@@ -87,6 +87,15 @@ class Collector
     }
 
     /**
+     * @param array $collectorConfiguration
+     * @return Collector
+     */
+    public static function createFromArray(array $collectorConfiguration)
+    {
+        // TODO
+    }
+
+    /**
      * @return string
      */
     public function getEvent()

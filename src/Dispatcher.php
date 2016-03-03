@@ -35,6 +35,14 @@ class Dispatcher
     }
 
     /**
+     * @return Configuration
+     */
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param string $payload
@@ -43,8 +51,6 @@ class Dispatcher
     public function dispatch($method, $uri, $payload)
     {
         $match = $this->baseDispatcher->dispatch($method, $uri);
-
-        print_r($match);
 
         if (FastRouteDispatcher::NOT_FOUND === $match[0]) {
             return $this->handleNotFound();
@@ -74,15 +80,14 @@ class Dispatcher
     }
 
     /**
-     * @param string|string[] $controller
+     * @param string[] $controller
      * @param string $method
      * @param string $uri
      * @param string $query
      * @param string $payload
      * @return JsonResponse
-     * @throws \RuntimeException
      */
-    private function handleFound($controller, $method, $uri, $query, $payload)
+    private function handleFound(array $controller, $method, $uri, $query, $payload)
     {
         try {
             $response = $this->invokeController(
@@ -96,27 +101,37 @@ class Dispatcher
                 return $response;
             }
 
-            throw new \RuntimeException('Your controller action must return Symfony\Component\HttpFoundation\JsonResponse');
+            throw new JsonException(
+                JsonResponse::HTTP_CONFLICT,
+                'Defined controller action must return Symfony\Component\HttpFoundation\JsonResponse'
+            );
         } catch (JsonException $e) {
             return $e->getJsonResponse();
         }
     }
 
     /**
-     * @param string|string[] $controller
+     * @param string[] $controller
      * @param array $attributes
      * @return mixed
+     * @throws JsonException
      */
-    private function invokeController($controller, array $attributes = [])
+    private function invokeController(array $controller, array $attributes = [])
     {
-        if (is_array($controller)) {
-            $controller = [
-                new $controller[0]($this->configuration),
-                $controller[1]
-            ];
+        if (count($controller) != 2) {
+            throw new JsonException(
+                JsonResponse::HTTP_CONFLICT,
+                'Defined controller must contain class name and callback method name'
+            );
         }
 
-        return call_user_func_array($controller, array_values($attributes));
+        return call_user_func_array(
+            [
+                new $controller[0]($this->configuration),
+                $controller[1]
+            ],
+            array_values($attributes)
+        );
     }
 
     /**
