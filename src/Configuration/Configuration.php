@@ -27,20 +27,41 @@ class Configuration
      * @param string $file
      * @return Configuration
      */
-    public static function loadFromFile($file)
+    public static function loadFromFile($file = '')
     {
         $configuration = new Configuration();
+        $parsedConfiguration = $configuration->getParsedConfiguration($file);
 
-        $parsedConfiguration = Yaml::parse(file_get_contents($file));
-        if (is_array($parsedConfiguration)) {
-            $factory = new EventFactory();
-            foreach ($parsedConfiguration as $eventConfiguration) {
-                $event = $factory->createFromArray($eventConfiguration);
-                $configuration->events[$event->getType()] = $event;
-            }
+        $factory = new EventFactory();
+        foreach ($parsedConfiguration as $eventConfiguration) {
+            $event = $factory->createFromArray($eventConfiguration);
+            $configuration->events[$event->getType()] = $event;
         }
 
         return $configuration;
+    }
+
+    /**
+     * @param string $file
+     * @return array
+     */
+    private function getParsedConfiguration($file = '')
+    {
+        $configFile = $file;
+        if (empty($configFile)) {
+            $configDumpPath = getenv('CONFIGURATION_DUMP_FILE_PATH');
+            $configFilePath = getenv('CONFIGURATION_FILE_PATH');
+
+            if (is_readable($configDumpPath)) {
+                $configFile = $configDumpPath;
+            } else if (is_readable($configFilePath)) {
+                $configFile = $configFilePath;
+            }
+        }
+
+        $parsedConfiguration = is_readable($configFile) ? Yaml::parse(file_get_contents($configFile)) : [];
+
+        return is_array($parsedConfiguration) ? $parsedConfiguration : [];
     }
 
     /**

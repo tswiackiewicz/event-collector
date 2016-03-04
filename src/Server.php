@@ -12,44 +12,69 @@ use React\Socket\Server as SocketServer;
 use TSwiackiewicz\EventsCollector\Configuration\Configuration;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 
+/**
+ * Class Server
+ * @package TSwiackiewicz\EventsCollector
+ */
 class Server
 {
+    const DEFAULT_HOST = '127.0.0.1';
+
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    /**
+     * @var SocketServer
+     */
+    private $socket;
+
+    /**
+     * @var HttpServer
+     */
+    private $http;
+
     /**
      * @var Dispatcher
      */
     private $dispatcher;
 
     /**
-     * @var string
-     */
-    private $configurationDumpFile;
-
-    /**
+     * @param LoopInterface $loop
+     * @param SocketServer $socket
+     * @param HttpServer $http
      * @param Dispatcher $dispatcher
-     * @param string $configurationDumpFile
      */
-    public function __construct(Dispatcher $dispatcher, $configurationDumpFile)
+    public function __construct(LoopInterface $loop, SocketServer $socket, HttpServer $http, Dispatcher $dispatcher)
     {
+        $this->loop = $loop;
+        $this->socket = $socket;
+        $this->http = $http;
         $this->dispatcher = $dispatcher;
-        $this->configurationDumpFile = $configurationDumpFile;
     }
 
     /**
      * @param RoutesCollection $routes
      * @param Configuration $configuration
-     * @param string $configurationDumpFile
      * @return Server
      */
-    public static function create(RoutesCollection $routes, Configuration $configuration, $configurationDumpFile)
+    public static function create(RoutesCollection $routes, Configuration $configuration)
     {
+        $loop = Factory::create();
+        $socket = new SocketServer($loop);
+        $http = new HttpServer($socket);
+
         return new Server(
+            $loop,
+            $socket,
+            $http,
             new Dispatcher(
                 new FastRouteGroupCountBasedDispatcher(
                     $routes->getRoutes()
                 ),
                 $configuration
-            ),
-            $configurationDumpFile
+            )
         );
     }
 
@@ -57,36 +82,34 @@ class Server
      * @param int $port
      * @param string $host
      */
-    public function listen($port, $host = '127.0.0.1')
+    public function listen($port, $host = self::DEFAULT_HOST)
     {
-        $loop = Factory::create();
+        $this->http->on('request', [$this, 'onRequest']);
+        $this->socket->listen($port, $host);
 
-        $socket = new SocketServer($loop);
+        $this->dumpConfiguration();
 
-        $http = new HttpServer($socket);
-        $http->on('request', [$this, 'onRequest']);
+        $this->loop->run();
+    }
 
-        $socket->listen($port, $host);
+    private function dumpConfiguration()
+    {
+        $interval = getenv('CONFIGURATION_DUMP_INTERVAL');
 
-        $this->dumpConfiguration($loop);
+        if (is_numeric($interval) && $interval > 0) {
+            $configuration = $this->dispatcher->getConfiguration();
+            $dumpFilePath = getenv('CONFIGURATION_DUMP_FILE_PATH');
 
-        $loop->run();
+            $this->loop->addPeriodicTimer($interval, function () use ($configuration, $dumpFilePath) {
+                $configuration->dump($dumpFilePath);
+            });
+        }
     }
 
     /**
-     * @param LoopInterface $loop
+     * @param HttpRequest $request
+     * @param HttpResponse $response
      */
-    private function dumpConfiguration(LoopInterface $loop)
-    {
-        $interval = 10;
-
-        $configuration = $this->dispatcher->getConfiguration();
-        $dumpFile = $this->configurationDumpFile;
-        $loop->addPeriodicTimer($interval, function () use ($configuration, $dumpFile) {
-            $configuration->dump($dumpFile);
-        });
-    }
-
     public function onRequest(HttpRequest $request, HttpResponse $response)
     {
         $payload = '';

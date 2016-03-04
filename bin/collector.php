@@ -6,11 +6,13 @@ use TSwiackiewicz\EventsCollector\Configuration\Configuration;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 use TSwiackiewicz\EventsCollector\Server;
 
-$configurationDumpFile = __DIR__ . '/../configuration.yml.bak';
-$configuration = new Configuration();
+$dotenv = new Dotenv\Dotenv(__DIR__ . '/..');
+$dotenv->load();
 
 $routes = RoutesCollection::create();
 $routes->registerDefaultRoutes();
 
-$server = Server::create($routes, $configuration, $configurationDumpFile);
-$server->listen(1234, '0.0.0.0');
+$configuration = Configuration::loadFromFile();
+
+$server = Server::create($routes, $configuration);
+$server->listen(getenv('PORT'), getenv('HOST'));
