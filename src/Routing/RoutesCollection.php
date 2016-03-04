@@ -108,7 +108,11 @@ class RoutesCollection
             [ActionController::class, 'registerEventAction']
         );
 
-        //$this->routes->addRoute('POST', '/event/{event_type}/', [EventController::class, 'collectEvent']);
+        $this->routes->addRoute(
+            'POST',
+            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/',
+            [EventController::class, 'collectEvent']
+        );
     }
 
     /**

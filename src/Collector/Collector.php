@@ -103,6 +103,14 @@ class Collector
     }
 
     /**
+     * @return string
+     */
+    public function getTargetType()
+    {
+        return $this->target->getType();
+    }
+
+    /**
      * @return array
      */
     public function toArray()
