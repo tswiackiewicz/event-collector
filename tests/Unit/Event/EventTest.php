@@ -85,7 +85,7 @@ class EventTest extends BaseTestCase
     {
         $this->assertEquals($this->type, $event->getType());
         $this->assertEquals($this->collectors, $event->getCollectors());
-        $this->assertEquals($this->actions, $event->getActions());
+        $this->assertEquals($this->actions, $event->getWatchers());
     }
 
     /**

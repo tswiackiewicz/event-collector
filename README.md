@@ -24,6 +24,7 @@ Events collection and alerting asynchronous daemon
 * postman test case scenarios -> 0.2.0
 * documentation -> 0.2.0
 * configuration refactoring -> 0.2.0
+* controller naming refactoring -> 0.2.0
 * not JSON payloads error support -> 0.2.0
 * fix: JsonException only in controller & dispatcher -> 0.2.0
 

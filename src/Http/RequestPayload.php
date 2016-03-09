@@ -34,6 +34,17 @@ class RequestPayload
     }
 
     /**
+     * @param string $payload
+     * @return bool
+     */
+    public static function isJsonPayload($payload)
+    {
+        json_decode($payload);
+
+        return (JSON_ERROR_NONE === json_last_error());
+    }
+
+    /**
      * @param string $key
      * @return array|string|int|float|bool|null
      */
@@ -43,7 +54,7 @@ class RequestPayload
 
         $keyParts = $this->getKeyParts($key);
         foreach ($keyParts as $keyPart) {
-            if (isset($value[$keyPart])) {
+            if(isset($value[$keyPart])) {
                 $value = $value[$keyPart];
                 continue;
             }

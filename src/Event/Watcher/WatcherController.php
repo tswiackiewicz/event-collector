@@ -1,46 +1,55 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Event;
+namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 use TSwiackiewicz\EventsCollector\Http\JsonException;
-use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 
 /**
- * Class EventController
- * @package TSwiackiewicz\EventsCollector\Event
+ * Class WatcherController
+ * @package TSwiackiewicz\EventsCollector\Event\Watcher
  */
-class EventController
+class WatcherController
 {
     /**
-     * @var EventService
+     * @var WatcherService
      */
     private $service;
 
     /**
-     * @param EventService $service
+     * @var WatcherFactory
      */
-    public function __construct(EventService $service)
+    private $factory;
+
+    /**
+     * @param WatcherService $service
+     * @param WatcherFactory $factory
+     */
+    public function __construct(WatcherService $service, WatcherFactory $factory)
     {
         $this->service = $service;
+        $this->factory = $factory;
     }
 
     /**
+     * @param Request $request
      * @return JsonResponse
      */
-    public function getAlEvents()
+    public function getEventWatchers(Request $request)
     {
         try {
 
-            $allEvents = $this->service->getEvents();
+            $eventWatchers = $this->service->getEventWatchers(
+                $request->query->get('event')
+            );
 
-            $events = [];
-            foreach ($allEvents as $event) {
-                $events[] = [
-                    '_id' => $event->getId(),
-                    'type' => $event->getType()
+            $watchers = [];
+            foreach ($eventWatchers as $eventWatcher) {
+                $watchers[] = [
+                    '_id' => $eventWatcher->getId(),
+                    'name' => $eventWatcher->getName()
                 ];
             }
 
@@ -53,7 +62,7 @@ class EventController
         }
 
         return new JsonResponse(
-            $events,
+            $watchers,
             JsonResponse::HTTP_OK
         );
     }
@@ -62,11 +71,14 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEvent(Request $request)
+    public function getEventWatcher(Request $request)
     {
         try {
 
-            $event = $this->service->getEvent($request->query->get('event'));
+            $watcher = $this->service->getEventWatcher(
+                $request->query->get('event'),
+                $request->query->get('watcher')
+            );
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -77,7 +89,7 @@ class EventController
         }
 
         return new JsonResponse(
-            $event->toArray(),
+            $watcher->toArray(),
             JsonResponse::HTTP_OK
         );
     }
@@ -86,14 +98,16 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function registerEvent(Request $request)
+    public function registerEventWatcher(Request $request)
     {
         try {
 
-            $payload = RequestPayload::fromJson($request->getContent());
-            $event = Event::create($payload->getValue('type'));
+            $watcher = $this->factory->create(
+                $request->request->get('event'),
+                $request->getContent()
+            );
 
-            $this->service->registerEvent($event);
+            $this->service->registerEventWatcher($watcher);
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -105,7 +119,7 @@ class EventController
 
         return new JsonResponse(
             [
-                '_id' => $event->getId()
+                '_id' => $watcher->getId()
             ],
             JsonResponse::HTTP_CREATED
         );
@@ -115,11 +129,14 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function unregisterEvent(Request $request)
+    public function unregisterEventWatcher(Request $request)
     {
         try {
 
-            $this->service->unregisterEvent($request->request->get('event'));
+            $this->service->unregisterEventWatcher(
+                $request->request->get('event'),
+                $request->request->get('watcher')
+            );
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -132,34 +149,6 @@ class EventController
         return new JsonResponse(
             [
                 'acknowledged' => true
-            ],
-            JsonResponse::HTTP_OK
-        );
-    }
-
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function collectEvent(Request $request)
-    {
-        try {
-
-            $event = $this->service->getEvent($request->request->get('event'));
-
-            $this->service->collectEvent($event, $request->getContent());
-
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
-        } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
-        } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
-        }
-
-        return new JsonResponse(
-            [
-                '_id' => $event->getId()
             ],
             JsonResponse::HTTP_OK
         );

@@ -1,15 +1,17 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Collector;
+namespace TSwiackiewicz\EventsCollector\Event\Watcher\Action;
 
 use Symfony\Component\HttpFoundation\ParameterBag;
-use TSwiackiewicz\EventsCollector\Collector\Exception\InvalidCollectorParameterException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 
 /**
- * Class CollectorTarget
- * @package TSwiackiewicz\EventsCollector\Collector
+ * Class WatcherAction
+ * @package TSwiackiewicz\EventsCollector\Event\Watcher\Action
  */
-abstract class CollectorTarget
+abstract class WatcherAction
 {
+    const EMAIL_ACTION = 'email';
+
     /**
      * @var string
      */
@@ -33,7 +35,7 @@ abstract class CollectorTarget
     }
 
     /**
-     * @throws InvalidCollectorParameterException
+     * @throws InvalidParameterException
      */
     abstract protected function validateParameters();
 
@@ -61,4 +63,9 @@ abstract class CollectorTarget
     {
         return $this->parameters->get($key);
     }
+
+    /**
+     * @return array
+     */
+    abstract public function toArray();
 }

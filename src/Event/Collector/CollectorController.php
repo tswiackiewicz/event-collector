@@ -1,46 +1,55 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Event;
+namespace TSwiackiewicz\EventsCollector\Event\Collector;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 use TSwiackiewicz\EventsCollector\Http\JsonException;
-use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 
 /**
- * Class EventController
- * @package TSwiackiewicz\EventsCollector\Event
+ * Class CollectorController
+ * @package TSwiackiewicz\EventsCollector\Event\Collector
  */
-class EventController
+class CollectorController
 {
     /**
-     * @var EventService
+     * @var CollectorService
      */
     private $service;
 
     /**
-     * @param EventService $service
+     * @var CollectorFactory
      */
-    public function __construct(EventService $service)
+    private $factory;
+
+    /**
+     * @param CollectorService $service
+     * @param CollectorFactory $factory
+     */
+    public function __construct(CollectorService $service, CollectorFactory $factory)
     {
         $this->service = $service;
+        $this->factory = $factory;
     }
 
     /**
+     * @param Request $request
      * @return JsonResponse
      */
-    public function getAlEvents()
+    public function getEventCollectors(Request $request)
     {
         try {
 
-            $allEvents = $this->service->getEvents();
+            $eventCollectors = $this->service->getEventCollectors(
+                $request->query->get('event')
+            );
 
-            $events = [];
-            foreach ($allEvents as $event) {
-                $events[] = [
-                    '_id' => $event->getId(),
-                    'type' => $event->getType()
+            $collectors = [];
+            foreach ($eventCollectors as $eventCollector) {
+                $collectors[] = [
+                    '_id' => $eventCollector->getId(),
+                    'name' => $eventCollector->getName()
                 ];
             }
 
@@ -53,7 +62,7 @@ class EventController
         }
 
         return new JsonResponse(
-            $events,
+            $collectors,
             JsonResponse::HTTP_OK
         );
     }
@@ -62,11 +71,14 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEvent(Request $request)
+    public function getEventCollector(Request $request)
     {
         try {
 
-            $event = $this->service->getEvent($request->query->get('event'));
+            $collector = $this->service->getEventCollector(
+                $request->query->get('event'),
+                $request->query->get('collector')
+            );
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -77,7 +89,7 @@ class EventController
         }
 
         return new JsonResponse(
-            $event->toArray(),
+            $collector->toArray(),
             JsonResponse::HTTP_OK
         );
     }
@@ -86,14 +98,16 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function registerEvent(Request $request)
+    public function registerEventCollector(Request $request)
     {
         try {
 
-            $payload = RequestPayload::fromJson($request->getContent());
-            $event = Event::create($payload->getValue('type'));
+            $collector = $this->factory->create(
+                $request->request->get('event'),
+                $request->getContent()
+            );
 
-            $this->service->registerEvent($event);
+            $this->service->registerEventCollector($collector);
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -105,7 +119,7 @@ class EventController
 
         return new JsonResponse(
             [
-                '_id' => $event->getId()
+                '_id' => $collector->getId()
             ],
             JsonResponse::HTTP_CREATED
         );
@@ -115,11 +129,14 @@ class EventController
      * @param Request $request
      * @return JsonResponse
      */
-    public function unregisterEvent(Request $request)
+    public function unregisterEventCollector(Request $request)
     {
         try {
 
-            $this->service->unregisterEvent($request->request->get('event'));
+            $this->service->unregisterEventCollector(
+                $request->request->get('event'),
+                $request->request->get('collector')
+            );
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
@@ -132,34 +149,6 @@ class EventController
         return new JsonResponse(
             [
                 'acknowledged' => true
-            ],
-            JsonResponse::HTTP_OK
-        );
-    }
-
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function collectEvent(Request $request)
-    {
-        try {
-
-            $event = $this->service->getEvent($request->request->get('event'));
-
-            $this->service->collectEvent($event, $request->getContent());
-
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
-        } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
-        } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
-        }
-
-        return new JsonResponse(
-            [
-                '_id' => $event->getId()
             ],
             JsonResponse::HTTP_OK
         );

@@ -191,7 +191,7 @@ class Configuration
     {
         $event = $this->getEventType($eventType);
 
-        return $event->getActions();
+        return $event->getWatchers();
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event;
 
-use TSwiackiewicz\EventsCollector\Action\ActionFactory;
-use TSwiackiewicz\EventsCollector\Collector\CollectorFactory;
+use TSwiackiewicz\EventsCollector\Event\Collector\CollectorFactory;
+use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherFactory;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 use TSwiackiewicz\EventsCollector\Uuid;
 
@@ -29,7 +29,7 @@ class EventFactory
         );
 
         $collectors = $payload->getValue('collectors');
-        if (is_array($collectors)) {
+        if(is_array($collectors)) {
             $collectorFactory = new CollectorFactory();
             foreach ($collectors as $collector) {
                 $event->addCollector(
@@ -38,12 +38,12 @@ class EventFactory
             }
         }
 
-        $actions = $payload->getValue('actions');
-        if (is_array($actions)) {
-            $actionFactory = new ActionFactory();
-            foreach ($actions as $action) {
-                $event->addAction(
-                    $actionFactory->createFromArray($eventType, $action)
+        $watchers = $payload->getValue('watchers');
+        if(is_array($watchers)) {
+            $watcherFactory = new WatcherFactory();
+            foreach ($watchers as $watcher) {
+                $event->addWatcher(
+                    $watcherFactory->createFromArray($eventType, $watcher)
                 );
             }
         }
