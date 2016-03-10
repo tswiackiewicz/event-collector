@@ -1,15 +1,15 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Tests\Unit\Collector;
+namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Collector;
 
-use TSwiackiewicz\EventsCollector\Collector\Collector;
-use TSwiackiewicz\EventsCollector\Collector\CollectorTarget;
-use TSwiackiewicz\EventsCollector\Collector\Exception\InvalidCollectorParameterException;
-use TSwiackiewicz\EventsCollector\Collector\Syslog\SyslogCollectorTarget;
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorAppender;
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
+use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
  * Class CollectorTest
- * @package TSwiackiewicz\EventsCollector\Tests\Unit\Collector
+ * @package TSwiackiewicz\EventsCollector\Tests\Unit\Event\Collector
  */
 class CollectorTest extends BaseTestCase
 {
@@ -24,9 +24,9 @@ class CollectorTest extends BaseTestCase
     private $event = 'test_event';
 
     /**
-     * @var CollectorTarget
+     * @var CollectorAppender
      */
-    private $target;
+    private $appender;
 
     /**
      * @var string
@@ -36,24 +36,24 @@ class CollectorTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateValidCollector()
+    public function shouldCreateCollector()
     {
-        $this->createSyslogCollectorTarget();
+        $this->createCollectorSyslogAppender();
 
         $collector = Collector::create(
             $this->name,
             $this->event,
-            $this->target
+            $this->appender
         );
 
         $this->assertCollector($collector);
     }
 
-    private function createSyslogCollectorTarget()
+    private function createCollectorSyslogAppender()
     {
-        $this->target = SyslogCollectorTarget::create(
+        $this->appender = CollectorSyslogAppender::create(
             [
-                SyslogCollectorTarget::IDENT_PARAMETER => $this->ident
+                CollectorSyslogAppender::IDENT_PARAMETER => $this->ident
             ]
         );
     }
@@ -65,27 +65,28 @@ class CollectorTest extends BaseTestCase
     {
         $this->assertEquals($this->name, $collector->getName());
         $this->assertEquals($this->event, $collector->getEvent());
-        $this->assertEquals($this->target, $collector->getTarget());
+        $this->assertEquals($this->appender, $collector->getAppender());
+        $this->assertEquals('syslog', $collector->getAppenderType());
     }
 
     /**
      * @test
      */
-    public function shouldReturnActionAsArray()
+    public function shouldReturnCollectorAsArray()
     {
-        $this->createSyslogCollectorTarget();
+        $this->createCollectorSyslogAppender();
 
         $collector = Collector::create(
             $this->name,
             $this->event,
-            $this->target
+            $this->appender
         );
 
         $this->assertEquals(
             [
                 '_id',
                 'name',
-                'target'
+                'appender'
             ],
             array_keys($collector->toArray())
         );
@@ -97,14 +98,14 @@ class CollectorTest extends BaseTestCase
      *
      * @param array $invalidParameters
      */
-    public function shouldThrowInvalidCollectorParameterExceptionIfCollectorIsInvalid(array $invalidParameters)
+    public function shouldThrowInvalidParameterExceptionWhenCollectorIsInvalid(array $invalidParameters)
     {
-        $this->setExpectedException(InvalidCollectorParameterException::class);
+        $this->setExpectedException(InvalidParameterException::class);
 
         Collector::create(
             $invalidParameters['name'],
             $invalidParameters['event'],
-            $invalidParameters['target']
+            $invalidParameters['appender']
         );
     }
 
@@ -113,105 +114,105 @@ class CollectorTest extends BaseTestCase
      */
     public function getInvalidCollectorParameters()
     {
-        $this->createSyslogCollectorTarget();
+        $this->createCollectorSyslogAppender();
 
         return [
             [
                 [
                     'name' => '',
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => false,
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => true,
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => null,
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => [],
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => 0,
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => 1234,
                     'event' => $this->event,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => '',
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => false,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => true,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => [],
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => 0,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => 1234,
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ],
             [
                 [
                     'name' => $this->name,
                     'event' => '',
-                    'target' => $this->target
+                    'appender' => $this->appender
                 ]
             ]
         ];
