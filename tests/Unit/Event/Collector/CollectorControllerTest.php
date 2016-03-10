@@ -70,6 +70,28 @@ class CollectorControllerTest extends BaseTestCase
     }
 
     /**
+     * @return Request
+     */
+    private function createRequestWithInvalidEventType()
+    {
+        return new Request(
+            [
+                'event' => [],
+                'collector' => $this->collector
+            ],
+            [
+                'event' => [],
+                'collector' => $this->collector
+            ],
+            [],
+            [],
+            [],
+            [],
+            $this->payload
+        );
+    }
+
+    /**
      * @return CollectorController
      */
     private function createCollectorController()
@@ -101,6 +123,19 @@ class CollectorControllerTest extends BaseTestCase
         $response = $controller->getEventCollectors($this->createRequest());
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpBadRequestResponseWhenReturnCollectorsForInvalidEventType()
+    {
+        $controller = $this->createCollectorController();
+        $controller->registerEventCollector($this->createRequest());
+
+        $response = $controller->getEventCollectors($this->createRequestWithInvalidEventType());
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -156,6 +191,19 @@ class CollectorControllerTest extends BaseTestCase
     /**
      * @test
      */
+    public function shouldReturnHttpBadRequestResponseWhenReturningCollectorForInvalidEventType()
+    {
+        $controller = $this->createCollectorController();
+        $controller->registerEventCollector($this->createRequest());
+
+        $response = $controller->getEventCollector($this->createRequestWithInvalidEventType());
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
     public function shouldUnregisterEventCollector()
     {
         $request = $this->createRequest();
@@ -188,6 +236,19 @@ class CollectorControllerTest extends BaseTestCase
         $response = $controller->unregisterEventCollector($this->createRequest());
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpBadRequestResponseWhenUnregisterCollectorForInvalidEventType()
+    {
+        $controller = $this->createCollectorController();
+        $controller->registerEventCollector($this->createRequest());
+
+        $response = $controller->unregisterEventCollector($this->createRequestWithInvalidEventType());
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -227,5 +288,18 @@ class CollectorControllerTest extends BaseTestCase
         $response = $controller->registerEventCollector($request);
 
         $this->assertResponse($response, JsonResponse::HTTP_CONFLICT);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpBadRequestResponseWhenRegisterCollectorForInvalidEventType()
+    {
+        $controller = $this->createCollectorController();
+        $controller->registerEventCollector($this->createRequest());
+
+        $response = $controller->registerEventCollector($this->createRequestWithInvalidEventType());
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 }
