@@ -1,12 +1,12 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 use TSwiackiewicz\EventsCollector\Uuid;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
 
 /**
  * Class WatcherFactory

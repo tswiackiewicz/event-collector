@@ -41,9 +41,8 @@ class CollectorController
     {
         try {
 
-            $eventCollectors = $this->service->getEventCollectors(
-                $request->query->get('event')
-            );
+            $eventType = $request->query->get('event');
+            $eventCollectors = $this->service->getEventCollectors($eventType);
 
             $collectors = [];
             foreach ($eventCollectors as $eventCollector) {
@@ -53,8 +52,6 @@ class CollectorController
                 ];
             }
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -80,8 +77,6 @@ class CollectorController
                 $request->query->get('collector')
             );
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -138,8 +133,6 @@ class CollectorController
                 $request->request->get('collector')
             );
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {

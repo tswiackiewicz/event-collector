@@ -1,10 +1,10 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
-use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
-use TSwiackiewicz\EventsCollector\Uuid;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherAction as Action;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\WatchedEventAggregator as Aggregator;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
+use TSwiackiewicz\EventsCollector\Uuid;
 
 /**
  * Class Watcher

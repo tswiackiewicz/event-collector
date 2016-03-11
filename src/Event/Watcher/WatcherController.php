@@ -41,9 +41,8 @@ class WatcherController
     {
         try {
 
-            $eventWatchers = $this->service->getEventWatchers(
-                $request->query->get('event')
-            );
+            $eventType = $request->query->get('event');
+            $eventWatchers = $this->service->getEventWatchers($eventType);
 
             $watchers = [];
             foreach ($eventWatchers as $eventWatcher) {
@@ -53,8 +52,6 @@ class WatcherController
                 ];
             }
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -80,8 +77,6 @@ class WatcherController
                 $request->query->get('watcher')
             );
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -138,8 +133,6 @@ class WatcherController
                 $request->request->get('watcher')
             );
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {

@@ -1,9 +1,9 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler;
 
-use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherAction;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
+use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 
 /**
  * Class WatcherActionHandlerFactory
