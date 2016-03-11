@@ -30,7 +30,7 @@ class EventController
     /**
      * @return JsonResponse
      */
-    public function getAlEvents()
+    public function getAllEvents()
     {
         try {
 
@@ -44,10 +44,6 @@ class EventController
                 ];
             }
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
-        } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
             return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
         }
@@ -68,8 +64,6 @@ class EventController
 
             $event = $this->service->getEvent($request->query->get('event'));
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -97,8 +91,6 @@ class EventController
 
         } catch (AlreadyRegisteredException $registered) {
             return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
-        } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
             return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
         }
@@ -121,8 +113,6 @@ class EventController
 
             $this->service->unregisterEvent($request->request->get('event'));
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {
@@ -149,8 +139,6 @@ class EventController
 
             $this->service->collectEvent($event, $request->getContent());
 
-        } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
         } catch (NotRegisteredException $notRegistered) {
             return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
         } catch (\Exception $e) {

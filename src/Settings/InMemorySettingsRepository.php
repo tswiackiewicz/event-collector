@@ -22,7 +22,7 @@ class InMemorySettingsRepository implements SettingsRepository
     /**
      * @param array $events
      */
-    public function __construct(array $events)
+    public function __construct(array $events = [])
     {
         $this->events = $events;
     }
@@ -37,11 +37,16 @@ class InMemorySettingsRepository implements SettingsRepository
 
     /**
      * @param Event $event
+     * @throws InvalidParameterException
      * @throws AlreadyRegisteredException
      */
     public function registerEvent(Event $event)
     {
         $eventType = $event->getType();
+
+        if(empty($eventType)) {
+            throw new InvalidParameterException('Event type not defined');
+        }
 
         if(!empty($this->events[$eventType])) {
             throw new AlreadyRegisteredException('Event type `' . $eventType . '` already registered');

@@ -37,7 +37,7 @@ class WatcherFactory
                     $eventType,
                     $payload->getValue('threshold'),
                     new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator')
+                        $payload->getValue('aggregator.fields')
                     ),
                     WatcherEmailAction::create(
                         $payload->getValue('action')
@@ -74,7 +74,7 @@ class WatcherFactory
                     $eventType,
                     $payload->getValue('threshold'),
                     new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator')
+                        $payload->getValue('aggregator.fields')
                     ),
                     WatcherEmailAction::create(
                         $payload->getValue('action')

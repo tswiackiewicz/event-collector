@@ -1,12 +1,13 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event;
 
-use TSwiackiewicz\EventsCollector\Action\Action;
-use TSwiackiewicz\EventsCollector\Action\Email\EmailActionTarget;
-use TSwiackiewicz\EventsCollector\Collector\Collector;
-use TSwiackiewicz\EventsCollector\Collector\Syslog\SyslogCollectorTarget;
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
+use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
 use TSwiackiewicz\EventsCollector\Event\Event;
-use TSwiackiewicz\EventsCollector\Event\Exception\InvalidEventParameterException;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\SingleWatchedEventAggregator;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -26,22 +27,22 @@ class EventTest extends BaseTestCase
     private $collectors = [];
 
     /**
-     * @var Action[]
+     * @var Watcher[]
      */
-    private $actions = [];
+    private $watchers = [];
 
     /**
      * @test
      */
-    public function shouldCreateValidEvent()
+    public function shouldCreateEvent()
     {
         $this->createEventCollectors();
-        $this->createEventActions();
+        $this->createEventWatchers();
 
         $event = Event::create(
             $this->type,
             $this->collectors,
-            $this->actions
+            $this->watchers
         );
 
         $this->assertEvent($event);
@@ -52,27 +53,25 @@ class EventTest extends BaseTestCase
         $this->collectors[] = Collector::create(
             'test_collector',
             $this->type,
-            SyslogCollectorTarget::create(
+            CollectorSyslogAppender::create(
                 [
-                    SyslogCollectorTarget::IDENT_PARAMETER => 'test'
+                    CollectorSyslogAppender::IDENT_PARAMETER => 'test'
                 ]
             )
         );
     }
 
-    private function createEventActions()
+    private function createEventWatchers()
     {
-        $this->actions[] = Action::create(
+        $this->watchers[] = Watcher::create(
             'test_action',
             $this->type,
             100,
-            [
-                'field1'
-            ],
-            EmailActionTarget::create(
+            new SingleWatchedEventAggregator(),
+            WatcherEmailAction::create(
                 [
-                    EmailActionTarget::TO_ADDRESS_PARAMETER => 'test@domain.com',
-                    EmailActionTarget::SUBJECT_PARAMETER => 'Test subject'
+                    WatcherEmailAction::TO_ADDRESS_PARAMETER => 'test@domain.com',
+                    WatcherEmailAction::SUBJECT_PARAMETER => 'Test subject'
                 ]
             )
         );
@@ -85,7 +84,7 @@ class EventTest extends BaseTestCase
     {
         $this->assertEquals($this->type, $event->getType());
         $this->assertEquals($this->collectors, $event->getCollectors());
-        $this->assertEquals($this->actions, $event->getWatchers());
+        $this->assertEquals($this->watchers, $event->getWatchers());
     }
 
     /**
@@ -94,12 +93,12 @@ class EventTest extends BaseTestCase
     public function shouldReturnEventAsArray()
     {
         $this->createEventCollectors();
-        $this->createEventActions();
+        $this->createEventWatchers();
 
         $event = Event::create(
             $this->type,
             $this->collectors,
-            $this->actions
+            $this->watchers
         );
 
         $this->assertEquals(
@@ -107,7 +106,7 @@ class EventTest extends BaseTestCase
                 '_id',
                 'type',
                 'collectors',
-                'actions'
+                'watchers'
             ],
             array_keys($event->toArray())
         );
@@ -119,13 +118,62 @@ class EventTest extends BaseTestCase
      *
      * @param string $invalidType
      */
-    public function shouldThrowInvalidEventParameterExceptionIfTypeIsInvalid($invalidType)
+    public function shouldThrowInvalidParameterExceptionWhenEventTypeIsInvalid($invalidType)
     {
-        $this->setExpectedException(InvalidEventParameterException::class);
+        $this->setExpectedException(InvalidParameterException::class);
 
         Event::create(
             $invalidType
         );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldDumpEventWithDetailedCollectorsAndWatchersListsToArray()
+    {
+        $this->createEventCollectors();
+        $this->createEventWatchers();
+
+        $event = Event::create(
+            $this->type,
+            $this->collectors,
+            $this->watchers
+        );
+        $dumpedEvent = $event->dump();
+
+        $this->assertEquals(
+            [
+                '_id',
+                'type',
+                'collectors',
+                'watchers'
+            ],
+            array_keys($dumpedEvent)
+        );
+
+        foreach ($dumpedEvent['collectors'] as $collector) {
+            $this->assertEquals(
+                [
+                    '_id',
+                    'name',
+                    'appender'
+                ],
+                array_keys($collector)
+            );
+        }
+        foreach ($dumpedEvent['watchers'] as $watcher) {
+            $this->assertEquals(
+                [
+                    '_id',
+                    'name',
+                    'threshold',
+                    'aggregator',
+                    'action'
+                ],
+                array_keys($watcher)
+            );
+        }
     }
 
     /**

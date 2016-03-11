@@ -177,7 +177,7 @@ class Event
      */
     public function getWatchers()
     {
-        return [];
+        return $this->watchers;
     }
 
     /**
@@ -205,7 +205,7 @@ class Event
             '_id' => $this->getId(),
             'type' => $this->getType(),
             'collectors' => $collectors,
-            'watcher' => $watchers
+            'watchers' => $watchers
         ];
     }
 

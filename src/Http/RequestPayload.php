@@ -39,9 +39,9 @@ class RequestPayload
      */
     public static function isJsonPayload($payload)
     {
-        json_decode($payload);
+        $decodedPayload = json_decode($payload);
 
-        return (JSON_ERROR_NONE === json_last_error());
+        return ($decodedPayload !== null && JSON_ERROR_NONE === json_last_error());
     }
 
     /**
