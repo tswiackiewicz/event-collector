@@ -1,9 +1,10 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event;
 
+use TSwiackiewicz\EventsCollector\Counters\Counters;
 use TSwiackiewicz\EventsCollector\Event\Collector\CollectorService;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherService;
-use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class EventService
@@ -12,7 +13,7 @@ use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
 class EventService
 {
     /**
-     * @var SettingsRepository
+     * @var Settings
      */
     private $repository;
 
@@ -27,18 +28,32 @@ class EventService
     private $watcherService;
 
     /**
-     * @param SettingsRepository $repository
+     * @param Settings $repository
      * @param CollectorService $collectorService
      * @param WatcherService $watcherService
      */
     public function __construct(
-        SettingsRepository $repository,
+        Settings $repository,
         CollectorService $collectorService,
         WatcherService $watcherService
     ) {
         $this->repository = $repository;
         $this->collectorService = $collectorService;
         $this->watcherService = $watcherService;
+    }
+
+    /**
+     * @param Settings $settings
+     * @param Counters $counters
+     * @return EventService
+     */
+    public static function create(Settings $settings, Counters $counters)
+    {
+        return new static(
+            $settings,
+            CollectorService::create($settings),
+            WatcherService::create($settings, $counters)
+        );
     }
 
     /**

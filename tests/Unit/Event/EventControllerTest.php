@@ -4,6 +4,7 @@ namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandler;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
@@ -16,11 +17,10 @@ use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHand
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
-use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherCounters;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherService;
-use TSwiackiewicz\EventsCollector\Settings\InMemorySettingsRepository;
-use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -49,7 +49,7 @@ class EventControllerTest extends BaseTestCase
         $controller = $this->createEventController();
         $controller->registerEvent($request);
 
-        $response = $controller->getAllEvents();
+        $response = $controller->getEvents();
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -80,7 +80,7 @@ class EventControllerTest extends BaseTestCase
     private function createEventController()
     {
         $events[$this->event] = Event::create($this->event);
-        $settings = new InMemorySettingsRepository($events);
+        $settings = new InMemorySettings($events);
 
         $service = new EventService(
             $settings,
@@ -91,7 +91,7 @@ class EventControllerTest extends BaseTestCase
             new WatcherService(
                 $settings,
                 new WatcherActionHandlerFactory(),
-                WatcherCounters::init()
+                new InMemoryCounters()
             )
         );
 
@@ -136,7 +136,7 @@ class EventControllerTest extends BaseTestCase
      */
     private function createEventControllerWithoutEventRegistered()
     {
-        $settings = new InMemorySettingsRepository();
+        $settings = new InMemorySettings();
 
         $service = new EventService(
             $settings,
@@ -147,7 +147,7 @@ class EventControllerTest extends BaseTestCase
             new WatcherService(
                 $settings,
                 new WatcherActionHandlerFactory(),
-                WatcherCounters::init()
+                new InMemoryCounters()
             )
         );
 
@@ -277,7 +277,7 @@ class EventControllerTest extends BaseTestCase
      */
     private function createEventControllerWithRegisteredCollector(array $watcherCounters = [])
     {
-        $settings = new InMemorySettingsRepository();
+        $settings = new InMemorySettings();
         $settings->registerEvent(Event::create($this->event));
         $settings->registerEventCollector($this->createCollector());
         $settings->registerEventWatcher($this->createWatcher());
@@ -341,10 +341,10 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
-     * @param SettingsRepository $settings
+     * @param Settings $settings
      * @return CollectorService
      */
-    private function createCollectorService(SettingsRepository $settings)
+    private function createCollectorService(Settings $settings)
     {
         $handler = new CollectorAppenderHandler(new NullLogger());
 
@@ -362,10 +362,10 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
-     * @param SettingsRepository $settings
+     * @param Settings $settings
      * @return WatcherService
      */
-    private function createWatcherService(SettingsRepository $settings, array $watcherCounters)
+    private function createWatcherService(Settings $settings, array $watcherCounters)
     {
         $handler = $this->getMockBuilder(WatcherActionHandler::class)
             ->disableOriginalConstructor()
@@ -384,7 +384,7 @@ class EventControllerTest extends BaseTestCase
         return new WatcherService(
             $settings,
             $factory,
-            new WatcherCounters($watcherCounters)
+            new InMemoryCounters($watcherCounters)
         );
     }
 

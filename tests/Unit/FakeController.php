@@ -2,14 +2,13 @@
 namespace TSwiackiewicz\EventsCollector\Tests\Unit;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use TSwiackiewicz\EventsCollector\Controller;
 use TSwiackiewicz\EventsCollector\Http\JsonException;
 
 /**
  * Class FakeController
  * @package TSwiackiewicz\EventsCollector\Tests\Unit
  */
-class FakeController extends Controller
+class FakeController
 {
     /**
      * @return JsonResponse

@@ -12,7 +12,7 @@ use TSwiackiewicz\EventsCollector\Uuid;
  */
 class Watcher
 {
-    const VALID_ACTION_NAME_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
+    const WATCHER_NAME_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
 
     /**
      * @var Uuid
@@ -71,7 +71,7 @@ class Watcher
      */
     private function validateName()
     {
-        if(empty($this->name) || !is_string($this->name)) {
+        if (empty($this->name) || !is_string($this->name)) {
             throw new InvalidParameterException('Action name is required');
         }
     }
@@ -81,7 +81,7 @@ class Watcher
      */
     private function validateEvent()
     {
-        if(empty($this->event) || !is_string($this->event)) {
+        if (empty($this->event) || !is_string($this->event)) {
             throw new InvalidParameterException('Event type is required');
         }
     }
@@ -91,7 +91,7 @@ class Watcher
      */
     private function validateThreshold()
     {
-        if(empty($this->threshold) || !is_int($this->threshold) || $this->threshold < 0) {
+        if (empty($this->threshold) || !is_int($this->threshold) || $this->threshold < 0) {
             throw new InvalidParameterException('Threshold (greater than zero) value is required');
         }
     }

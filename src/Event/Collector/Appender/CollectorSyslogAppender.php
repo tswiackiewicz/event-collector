@@ -39,8 +39,8 @@ class CollectorSyslogAppender extends CollectorAppender
     {
         $ident = $this->parameters->get(self::IDENT_PARAMETER);
 
-        if(empty($ident)) {
-            throw new InvalidParameterException('Not empty syslog collector ident parameter is required');
+        if (empty($ident)) {
+            throw new InvalidParameterException('Not empty syslog collector appender.ident parameter is required');
         }
     }
 }

@@ -29,7 +29,7 @@ class EventFactory
         );
 
         $collectors = $payload->getValue('collectors');
-        if(is_array($collectors)) {
+        if (is_array($collectors)) {
             $collectorFactory = new CollectorFactory();
             foreach ($collectors as $collector) {
                 $event->addCollector(
@@ -39,7 +39,7 @@ class EventFactory
         }
 
         $watchers = $payload->getValue('watchers');
-        if(is_array($watchers)) {
+        if (is_array($watchers)) {
             $watcherFactory = new WatcherFactory();
             foreach ($watchers as $watcher) {
                 $event->addWatcher(

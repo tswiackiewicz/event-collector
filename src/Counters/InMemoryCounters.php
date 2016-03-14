@@ -1,13 +1,13 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Event\Watcher;
+namespace TSwiackiewicz\EventsCollector\Counters;
 
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 
 /**
- * Class WatcherCounters
- * @package TSwiackiewicz\EventsCollector\Event\Watcher
+ * Class InMemoryCounters
+ * @package TSwiackiewicz\EventsCollector\Counters
  */
-class WatcherCounters
+class InMemoryCounters implements Counters
 {
     /**
      * @var array
@@ -17,22 +17,15 @@ class WatcherCounters
     /**
      * @param array $counters
      */
-    public function __construct(array $counters)
+    public function __construct(array $counters = [])
     {
         $this->counters = $counters;
     }
 
     /**
-     * @return WatcherCounters
-     */
-    public static function init()
-    {
-        return new static([]);
-    }
-
-    /**
      * @param string $key
      * @return int
+     * @throws InvalidParameterException
      */
     public function increaseCounter($key)
     {
@@ -45,6 +38,7 @@ class WatcherCounters
     /**
      * @param string $key
      * @return int
+     * @throws InvalidParameterException
      */
     public function getCounter($key)
     {
@@ -59,7 +53,7 @@ class WatcherCounters
      */
     private function validateCounterKey($key)
     {
-        if(empty($key) || !is_string($key)) {
+        if (empty($key) || !is_string($key)) {
             throw new InvalidParameterException('Not empty watcher counter key is required');
         }
     }

@@ -33,7 +33,7 @@ class CollectorAppenderHandlerFactoryTest extends BaseTestCase
     public function shouldThrowUnknownTypeExceptionWhenGivenCollectorAppenderTypeIsUnknown()
     {
         $this->setExpectedException(UnknownTypeException::class);
-        
+
         $appender = $this->createCollectorAppenderWithUnknownType();
 
         $factory = new CollectorAppenderHandlerFactory();

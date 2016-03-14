@@ -9,7 +9,6 @@ use React\Http\Request as HttpRequest;
 use React\Http\Response as HttpResponse;
 use React\Http\Server as HttpServer;
 use React\Socket\Server as SocketServer;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 
 /**
@@ -56,10 +55,10 @@ class Server
 
     /**
      * @param RoutesCollection $routes
-     * @param Configuration $configuration
+     * @param ControllerFactory $factory
      * @return Server
      */
-    public static function create(RoutesCollection $routes, Configuration $configuration)
+    public static function create(RoutesCollection $routes, ControllerFactory $factory)
     {
         $loop = Factory::create();
         $socket = new SocketServer($loop);
@@ -70,10 +69,8 @@ class Server
             $socket,
             $http,
             new Dispatcher(
-                new FastRouteGroupCountBasedDispatcher(
-                    $routes->getRoutes()
-                ),
-                $configuration
+                new FastRouteGroupCountBasedDispatcher($routes->getRoutes()),
+                $factory
             )
         );
     }
@@ -97,11 +94,10 @@ class Server
         $interval = getenv('CONFIGURATION_DUMP_INTERVAL');
 
         if (is_numeric($interval) && $interval > 0) {
-            $configuration = $this->dispatcher->getConfiguration();
             $dumpFilePath = getenv('CONFIGURATION_DUMP_FILE_PATH');
-
-            $this->loop->addPeriodicTimer($interval, function () use ($configuration, $dumpFilePath) {
-                $configuration->dump($dumpFilePath);
+            /** @noinspection PhpParamsInspection */
+            $this->loop->addPeriodicTimer($interval, function () use ($dumpFilePath) {
+                $this->dispatcher->dumpSettings($dumpFilePath);
             });
         }
     }
@@ -118,9 +114,8 @@ class Server
             $request->close();
         });
 
-        $dispatcher = $this->dispatcher;
-        $request->on('end', function () use ($dispatcher, $request, $response, &$payload) {
-            $return = $dispatcher->dispatch(
+        $request->on('end', function () use ($request, $response, &$payload) {
+            $return = $this->dispatcher->dispatch(
                 $request->getMethod(),
                 $request->getPath(),
                 $payload

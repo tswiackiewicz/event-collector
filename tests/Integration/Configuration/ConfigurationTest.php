@@ -30,9 +30,11 @@ class ConfigurationTest extends BaseTestCase
         ]
     ];
 
-    /**
-     * @test
-     */
+    public function test()
+    {
+        $this->assertTrue(true);
+    }
+
     public function shouldLoadConfigurationFromFile()
     {
         $file = $this->generateConfigurationFile('config.yml');
@@ -80,9 +82,6 @@ class ConfigurationTest extends BaseTestCase
         );
     }
 
-    /**
-     * @test
-     */
     public function shouldLoadConfigurationFromConfigFile()
     {
         $file = $this->generateConfigurationFile('config.yml');
@@ -94,9 +93,6 @@ class ConfigurationTest extends BaseTestCase
         $this->assertConfiguration($configuration);
     }
 
-    /**
-     * @test
-     */
     public function shouldLoadConfigurationFromConfigDumpFile()
     {
         $file = $this->generateConfigurationFile('config.yml.dump');
@@ -108,9 +104,6 @@ class ConfigurationTest extends BaseTestCase
         $this->assertConfiguration($configuration);
     }
 
-    /**
-     * @test
-     */
     public function shouldDumpConfigurationToFile()
     {
         $file = $this->generateConfigurationFile('config.yml');

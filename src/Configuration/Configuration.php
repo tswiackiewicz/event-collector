@@ -2,15 +2,13 @@
 
 namespace TSwiackiewicz\EventsCollector\Configuration;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Yaml\Yaml;
-use TSwiackiewicz\EventsCollector\Action\Action;
-use TSwiackiewicz\EventsCollector\Collector\Collector;
+use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
 use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Event\EventFactory;
-use TSwiackiewicz\EventsCollector\Event\Exception\EventTypeAlreadyRegisteredException;
-use TSwiackiewicz\EventsCollector\Event\Exception\InvalidEventParameterException;
-use TSwiackiewicz\EventsCollector\Event\Exception\NotRegisteredEventTypeException;
+use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
+use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 
 /**
  * Class Configuration
@@ -87,7 +85,6 @@ class Configuration
 
     /**
      * @param string $eventType
-     * @throws NotRegisteredEventTypeException
      */
     public function unregisterEventType($eventType)
     {
@@ -99,20 +96,17 @@ class Configuration
     /**
      * @param string $eventType
      * @return Event
-     * @throws InvalidEventParameterException
-     * @throws NotRegisteredEventTypeException
+     * @throws InvalidParameterException
+     * @throws NotRegisteredException
      */
     public function getEventType($eventType)
     {
         if (empty($eventType)) {
-            throw new InvalidEventParameterException(JsonResponse::HTTP_BAD_REQUEST, 'Event type not defined');
+            throw new InvalidParameterException('Event type not defined');
         }
 
         if (empty($this->events[$eventType])) {
-            throw new NotRegisteredEventTypeException(
-                JsonResponse::HTTP_NOT_FOUND,
-                'Event type `' . $eventType . '` is not registered'
-            );
+            throw new NotRegisteredException('Event type `' . $eventType . '` is not registered');
         }
 
         return $this->events[$eventType];
@@ -120,17 +114,14 @@ class Configuration
 
     /**
      * @param Event $event
-     * @throws EventTypeAlreadyRegisteredException
+     * @throws AlreadyRegisteredException
      */
     public function registerEventType(Event $event)
     {
         $eventType = $event->getType();
 
         if (!empty($this->events[$eventType])) {
-            throw new EventTypeAlreadyRegisteredException(
-                JsonResponse::HTTP_CONFLICT,
-                'Event type `' . $eventType . '` already registered'
-            );
+            throw new AlreadyRegisteredException('Event type `' . $eventType . '` already registered');
         }
 
         $this->events[$eventType] = $event;

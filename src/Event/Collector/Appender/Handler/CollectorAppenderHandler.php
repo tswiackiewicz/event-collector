@@ -41,7 +41,7 @@ class CollectorAppenderHandler
      */
     private function prepareMessage($uuid, $payload)
     {
-        if(false === RequestPayload::isJsonPayload($payload)) {
+        if (false === RequestPayload::isJsonPayload($payload)) {
             throw new InvalidParameterException('String JSON payload is expected');
         }
 

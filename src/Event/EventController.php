@@ -3,10 +3,12 @@ namespace TSwiackiewicz\EventsCollector\Event;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Counters\Counters;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class EventController
@@ -28,9 +30,21 @@ class EventController
     }
 
     /**
+     * @param Settings $settings
+     * @param Counters $counters
+     * @return EventController
+     */
+    public static function create(Settings $settings, Counters $counters)
+    {
+        return new static(
+            EventService::create($settings, $counters)
+        );
+    }
+
+    /**
      * @return JsonResponse
      */
-    public function getAllEvents()
+    public function getEvents()
     {
         try {
 
@@ -45,7 +59,7 @@ class EventController
             }
 
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -65,9 +79,9 @@ class EventController
             $event = $this->service->getEvent($request->query->get('event'));
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -90,9 +104,9 @@ class EventController
             $this->service->registerEvent($event);
 
         } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $registered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -114,9 +128,9 @@ class EventController
             $this->service->unregisterEvent($request->request->get('event'));
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -140,9 +154,9 @@ class EventController
             $this->service->collectEvent($event, $request->getContent());
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(

@@ -14,7 +14,7 @@ use TSwiackiewicz\EventsCollector\Uuid;
  */
 class Event
 {
-    const VALID_EVENT_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
+    const EVENT_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
 
     /**
      * @var Uuid
@@ -57,7 +57,7 @@ class Event
      */
     private function validateType()
     {
-        if(empty($this->type) || !is_string($this->type)) {
+        if (empty($this->type) || !is_string($this->type)) {
             throw new InvalidParameterException('Event type is required');
         }
     }
@@ -86,7 +86,7 @@ class Event
     {
         $collectorName = $collector->getName();
 
-        if(!empty($this->collectors[$collectorName])) {
+        if (!empty($this->collectors[$collectorName])) {
             throw new AlreadyRegisteredException(
                 'Collector `' . $collectorName . '` already registered for event `' . $this->type . '`'
             );
@@ -112,7 +112,7 @@ class Event
      */
     public function getCollector($collectorName)
     {
-        if(empty($this->collectors[$collectorName])) {
+        if (empty($this->collectors[$collectorName])) {
             throw new NotRegisteredException(
                 'Collector `' . $collectorName . '` is not registered for event type `' . $this->type . '`'
             );
@@ -137,7 +137,7 @@ class Event
     {
         $watcherName = $watcher->getName();
 
-        if(!empty($this->watchers[$watcherName])) {
+        if (!empty($this->watchers[$watcherName])) {
             throw new AlreadyRegisteredException(
                 'Watcher `' . $watcherName . '` already registered for event `' . $this->type . '`'
             );
@@ -163,7 +163,7 @@ class Event
      */
     public function getWatcher($watcherName)
     {
-        if(empty($this->watchers[$watcherName])) {
+        if (empty($this->watchers[$watcherName])) {
             throw new NotRegisteredException(
                 'Watcher `' . $watcherName . '` is not registered for event type `' . $this->type . '`'
             );

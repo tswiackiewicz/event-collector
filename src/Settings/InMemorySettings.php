@@ -1,18 +1,20 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Settings;
 
+use Symfony\Component\Yaml\Yaml;
 use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
 use TSwiackiewicz\EventsCollector\Event\Event;
+use TSwiackiewicz\EventsCollector\Event\EventFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 
 /**
- * Class InMemorySettingsRepository
+ * Class InMemorySettings
  * @package TSwiackiewicz\EventsCollector\Settings
  */
-class InMemorySettingsRepository implements SettingsRepository
+class InMemorySettings implements Settings
 {
     /**
      * @var array [event_type => Event]
@@ -26,6 +28,62 @@ class InMemorySettingsRepository implements SettingsRepository
     {
         $this->events = $events;
     }
+
+    /**
+     * @param string $file
+     * @return InMemorySettings
+     */
+    public static function loadFromFile($file = '')
+    {
+        $settings = new static();
+        $parsedConfiguration = $settings->getParsedSettings($file);
+
+        $factory = new EventFactory();
+        foreach ($parsedConfiguration as $eventConfiguration) {
+            $event = $factory->createFromArray($eventConfiguration);
+            $settings->events[$event->getType()] = $event;
+        }
+
+        return $settings;
+    }
+
+    /**
+     * @param string $file
+     * @return array
+     */
+    private function getParsedSettings($file = '')
+    {
+        $configFile = $file;
+        if (empty($configFile)) {
+            $configDumpPath = getenv('CONFIGURATION_DUMP_FILE_PATH');
+            $configFilePath = getenv('CONFIGURATION_FILE_PATH');
+
+            if (is_readable($configDumpPath)) {
+                $configFile = $configDumpPath;
+            } else if (is_readable($configFilePath)) {
+                $configFile = $configFilePath;
+            }
+        }
+
+        $parsedSettings = is_readable($configFile) ? Yaml::parse(file_get_contents($configFile)) : [];
+
+        return is_array($parsedSettings) ? $parsedSettings : [];
+    }
+
+    /**
+     * @param string $file
+     */
+    public function dump($file)
+    {
+        $dump = [];
+        foreach ($this->events as $eventType => $event) {
+            /** @var Event $event */
+            $dump[] = $event->dump();
+        }
+
+        file_put_contents($file, Yaml::dump($dump));
+    }
+
 
     /**
      * @return Event[]
@@ -44,11 +102,11 @@ class InMemorySettingsRepository implements SettingsRepository
     {
         $eventType = $event->getType();
 
-        if(empty($eventType)) {
+        if (empty($eventType)) {
             throw new InvalidParameterException('Event type not defined');
         }
 
-        if(!empty($this->events[$eventType])) {
+        if (!empty($this->events[$eventType])) {
             throw new AlreadyRegisteredException('Event type `' . $eventType . '` already registered');
         }
 
@@ -75,11 +133,11 @@ class InMemorySettingsRepository implements SettingsRepository
      */
     public function getEvent($eventType)
     {
-        if(empty($eventType)) {
+        if (empty($eventType)) {
             throw new InvalidParameterException('Event type not defined');
         }
 
-        if(empty($this->events[$eventType])) {
+        if (empty($this->events[$eventType])) {
             throw new NotRegisteredException('Event type `' . $eventType . '` is not registered');
         }
 

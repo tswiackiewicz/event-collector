@@ -5,7 +5,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class CollectorController
@@ -34,6 +35,18 @@ class CollectorController
     }
 
     /**
+     * @param Settings $settings
+     * @return CollectorController
+     */
+    public static function create(Settings $settings)
+    {
+        $service = CollectorService::create($settings);
+        $factory = new CollectorFactory();
+
+        return new static($service, $factory);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */
@@ -53,9 +66,9 @@ class CollectorController
             }
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -78,9 +91,9 @@ class CollectorController
             );
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -105,11 +118,11 @@ class CollectorController
             $this->service->registerEventCollector($collector);
 
         } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $registered->getMessage());
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -134,9 +147,9 @@ class CollectorController
             );
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(

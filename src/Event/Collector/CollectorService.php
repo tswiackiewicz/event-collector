@@ -4,7 +4,7 @@ namespace TSwiackiewicz\EventsCollector\Event\Collector;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
-use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class CollectorService
@@ -13,7 +13,7 @@ use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
 class CollectorService
 {
     /**
-     * @var SettingsRepository
+     * @var Settings
      */
     private $repository;
 
@@ -23,13 +23,25 @@ class CollectorService
     private $factory;
 
     /**
-     * @param SettingsRepository $repository
+     * @param Settings $repository
      * @param CollectorAppenderHandlerFactory $factory
      */
-    public function __construct(SettingsRepository $repository, CollectorAppenderHandlerFactory $factory)
+    public function __construct(Settings $repository, CollectorAppenderHandlerFactory $factory)
     {
         $this->repository = $repository;
         $this->factory = $factory;
+    }
+
+    /**
+     * @param Settings $settings
+     * @return CollectorService
+     */
+    public static function create(Settings $settings)
+    {
+        return new static(
+            $settings,
+            new CollectorAppenderHandlerFactory()
+        );
     }
 
     /**
@@ -76,7 +88,7 @@ class CollectorService
     public function collect(Event $event, $eventPayload)
     {
         $collectors = $event->getCollectors();
-        if(empty($collectors)) {
+        if (empty($collectors)) {
             throw new NotRegisteredException('Collectors are not registered for event type `' . $event->getType() . '`');
         }
 

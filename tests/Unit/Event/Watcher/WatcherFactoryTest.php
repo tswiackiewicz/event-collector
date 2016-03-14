@@ -43,7 +43,7 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(InvalidParameterException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->create('test_event', '{"action":[]}');
+        $factory->create('test_event', '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":[]}');
     }
 
     /**
@@ -54,7 +54,7 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(UnknownTypeException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->create('test_event', '{"action":{"type":"unknown_type"}}');
+        $factory->create('test_event', '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":{"type":"unknown_type"}}');
     }
 
     /**
@@ -95,7 +95,19 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(InvalidParameterException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->createFromArray('test_event', ['action' => []]);
+        $factory->createFromArray(
+            'test_event',
+            [
+                'aggregator' => [
+                    'type' => 'fields',
+                    'fields' => [
+                        'field1',
+                        'field2'
+                    ]
+                ],
+                'action' => []
+            ]
+        );
     }
 
     /**
@@ -106,6 +118,20 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(UnknownTypeException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->createFromArray('test_event', ['action' => ['type' => 'unknown_type']]);
+        $factory->createFromArray(
+            'test_event',
+            [
+                'aggregator' => [
+                    'type' => 'fields',
+                    'fields' => [
+                        'field1',
+                        'field2'
+                    ]
+                ],
+                'action' => [
+                    'type' => 'unknown_type'
+                ]
+            ]
+        );
     }
 }

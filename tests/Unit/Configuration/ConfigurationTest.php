@@ -2,7 +2,7 @@
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Configuration;
 
 use TSwiackiewicz\EventsCollector\Configuration\Configuration;
-use TSwiackiewicz\EventsCollector\Event\Exception\InvalidEventParameterException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -14,9 +14,9 @@ class ConfigurationTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldThrowInvalidEventParameterExceptionIfEventTypeIsEmpty()
+    public function shouldThrowInvalidParameterExceptionIfEventTypeIsEmpty()
     {
-        $this->setExpectedException(InvalidEventParameterException::class);
+        $this->setExpectedException(InvalidParameterException::class);
 
         $configuration = new Configuration();
         $configuration->getEventType('');

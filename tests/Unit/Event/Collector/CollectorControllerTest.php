@@ -8,7 +8,7 @@ use TSwiackiewicz\EventsCollector\Event\Collector\CollectorController;
 use TSwiackiewicz\EventsCollector\Event\Collector\CollectorFactory;
 use TSwiackiewicz\EventsCollector\Event\Collector\CollectorService;
 use TSwiackiewicz\EventsCollector\Event\Event;
-use TSwiackiewicz\EventsCollector\Settings\InMemorySettingsRepository;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -98,7 +98,7 @@ class CollectorControllerTest extends BaseTestCase
     {
         $events[$this->event] = Event::create($this->event);
         $service = new CollectorService(
-            new InMemorySettingsRepository($events),
+            new InMemorySettings($events),
             new CollectorAppenderHandlerFactory()
         );
 
@@ -144,7 +144,7 @@ class CollectorControllerTest extends BaseTestCase
     private function createCollectorControllerWithoutEventRegistered()
     {
         $service = new CollectorService(
-            new InMemorySettingsRepository(),
+            new InMemorySettings(),
             new CollectorAppenderHandlerFactory()
         );
 

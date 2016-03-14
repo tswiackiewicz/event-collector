@@ -11,7 +11,7 @@ use TSwiackiewicz\EventsCollector\Uuid;
  */
 class Collector
 {
-    const VALID_COLLECTOR_NAME_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
+    const COLLECTOR_NAME_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
 
     /**
      * @var Uuid
@@ -55,7 +55,7 @@ class Collector
      */
     private function validateName()
     {
-        if(empty($this->name) || !is_string($this->name)) {
+        if (empty($this->name) || !is_string($this->name)) {
             throw new InvalidParameterException('Not empty collector name is required');
         }
     }
@@ -65,7 +65,7 @@ class Collector
      */
     private function validateEvent()
     {
-        if(empty($this->event) || !is_string($this->event)) {
+        if (empty($this->event) || !is_string($this->event)) {
             throw new InvalidParameterException('Not empty collector event type is required');
         }
     }

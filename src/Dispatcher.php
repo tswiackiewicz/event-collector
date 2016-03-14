@@ -5,7 +5,7 @@ namespace TSwiackiewicz\EventsCollector;
 use FastRoute\Dispatcher as FastRouteDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
 use TSwiackiewicz\EventsCollector\Http\JsonException;
 
 /**
@@ -20,26 +20,18 @@ class Dispatcher
     private $baseDispatcher;
 
     /**
-     * @var Configuration
+     * @var ControllerFactory
      */
-    private $configuration;
+    private $factory;
 
     /**
      * @param FastRouteDispatcher $baseDispatcher
-     * @param Configuration $configuration
+     * @param ControllerFactory $factory
      */
-    public function __construct(FastRouteDispatcher $baseDispatcher, Configuration $configuration)
+    public function __construct(FastRouteDispatcher $baseDispatcher, ControllerFactory $factory)
     {
         $this->baseDispatcher = $baseDispatcher;
-        $this->configuration = $configuration;
-    }
-
-    /**
-     * @return Configuration
-     */
-    public function getConfiguration()
-    {
-        return $this->configuration;
+        $this->factory = $factory;
     }
 
     /**
@@ -68,7 +60,7 @@ class Dispatcher
      */
     private function handleNotFound()
     {
-        return (new JsonException(JsonResponse::HTTP_NOT_FOUND, 'Not Found'))->getJsonResponse();
+        return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, 'Not Found');
     }
 
     /**
@@ -76,7 +68,7 @@ class Dispatcher
      */
     private function handleNotAllowed()
     {
-        return (new JsonException(JsonResponse::HTTP_METHOD_NOT_ALLOWED, 'Method Not Allowed'))->getJsonResponse();
+        return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_METHOD_NOT_ALLOWED, 'Method Not Allowed');
     }
 
     /**
@@ -127,7 +119,7 @@ class Dispatcher
 
         return call_user_func_array(
             [
-                new $controller[0]($this->configuration),
+                $this->factory->create($controller[0]),
                 $controller[1]
             ],
             array_values($attributes)
@@ -152,5 +144,13 @@ class Dispatcher
             [],
             $payload
         );
+    }
+
+    /**
+     * @param string $file
+     */
+    public function dumpSettings($file)
+    {
+        $this->factory->dumpSettings($file);
     }
 }

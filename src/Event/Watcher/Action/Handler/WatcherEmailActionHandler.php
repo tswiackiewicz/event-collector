@@ -37,7 +37,7 @@ class WatcherEmailActionHandler implements WatcherActionHandler
      */
     private function validateEmailToAddress()
     {
-        if(false === filter_var($this->toAddress, FILTER_VALIDATE_EMAIL)) {
+        if (false === filter_var($this->toAddress, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidParameterException('Invalid recipient email address');
         }
     }
@@ -47,7 +47,7 @@ class WatcherEmailActionHandler implements WatcherActionHandler
      */
     private function validateSubject()
     {
-        if(empty($this->subject) || !is_string($this->subject)) {
+        if (empty($this->subject) || !is_string($this->subject)) {
             throw new InvalidParameterException('Not empty email message subject is required');
         }
     }
@@ -57,7 +57,7 @@ class WatcherEmailActionHandler implements WatcherActionHandler
      */
     public function handle($message)
     {
-        print "TO: {$this->toAddress}" . PHP_EOL . "SUBJECT: {$this->subject}" . PHP_EOL . $message . PHP_EOL;
+        print "TO: `{$this->toAddress}`, SUBJECT: `{$this->subject}`, MESSAGE: `" . $message . "`" . PHP_EOL;
 
         //mail($this->toAddress, $this->subject, $message);
     }

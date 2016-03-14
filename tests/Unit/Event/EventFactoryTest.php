@@ -37,7 +37,10 @@ class EventFactoryTest extends BaseTestCase
                         'name' => 'test_action',
                         'threshold' => 100,
                         'aggregator' => [
-                            'type' => 'single'
+                            'type' => 'single',
+                            'fields' => [
+                                'field_name'
+                            ]
                         ],
                         'action' => [
                             'type' => 'email',

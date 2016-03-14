@@ -3,13 +3,13 @@ namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Watcher;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherController;
-use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherCounters;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherService;
-use TSwiackiewicz\EventsCollector\Settings\InMemorySettingsRepository;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -31,7 +31,7 @@ class WatcherControllerTest extends BaseTestCase
     /**
      * @var string
      */
-    private $payload = '{"name":"test_watcher","threshold":100,"aggregator":{"type":"single"},"action":{"type":"email","to":"user@domain.com","subject":"Test subject"}}';
+    private $payload = '{"name":"test_watcher","threshold":100,"aggregator":{"type":"single", "fields":["field_name"]},"action":{"type":"email","to":"user@domain.com","subject":"Test subject"}}';
 
     /**
      * @test
@@ -78,9 +78,9 @@ class WatcherControllerTest extends BaseTestCase
         $events[$this->event] = Event::create($this->event);
 
         $service = new WatcherService(
-            new InMemorySettingsRepository($events),
+            new InMemorySettings($events),
             new WatcherActionHandlerFactory(),
-            WatcherCounters::init()
+            new InMemoryCounters()
         );
 
         return new WatcherController(
@@ -115,9 +115,9 @@ class WatcherControllerTest extends BaseTestCase
     private function createWatcherControllerWithoutEventRegistered()
     {
         $service = new WatcherService(
-            new InMemorySettingsRepository(),
+            new InMemorySettings(),
             new WatcherActionHandlerFactory(),
-            WatcherCounters::init()
+            new InMemoryCounters()
         );
 
         return new WatcherController(
@@ -174,6 +174,7 @@ class WatcherControllerTest extends BaseTestCase
         $controller->registerEventWatcher($request);
 
         $response = $controller->getEventWatcher($request);
+
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }

@@ -24,20 +24,25 @@ class WatcherFactory
     public function create($eventType, $jsonPayload)
     {
         $payload = RequestPayload::fromJson($jsonPayload);
-        $actionType = $payload->getValue('action.type');
 
-        if(empty($actionType)) {
-            throw new InvalidParameterException('Action type is required');
+        $actionType = $payload->getValue('action.type');
+        if (empty($actionType)) {
+            throw new InvalidParameterException('Watcher action.type is required');
+        }
+
+        $aggregatorType = $payload->getValue('aggregator.type');
+        if (empty($aggregatorType)) {
+            throw new InvalidParameterException('Watcher aggregator.type is required');
         }
 
         switch ($actionType) {
             case WatcherEmailAction::EMAIL_ACTION:
                 return Watcher::create(
-                    $payload->getValue('name'),
+                    $payload->getValue('name', ''),
                     $eventType,
-                    $payload->getValue('threshold'),
+                    $payload->getValue('threshold', 0),
                     new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator.fields')
+                        $payload->getValue('aggregator.fields', [])
                     ),
                     WatcherEmailAction::create(
                         $payload->getValue('action')
@@ -45,7 +50,7 @@ class WatcherFactory
                 );
         }
 
-        throw new UnknownTypeException('Unknown action type: `' . $actionType . '`');
+        throw new UnknownTypeException('Unknown watcher action.type: `' . $actionType . '`');
     }
 
     /**
@@ -57,24 +62,27 @@ class WatcherFactory
      */
     public function createFromArray($eventType, array $actionConfiguration)
     {
-        $payload = RequestPayload::fromJson(
-            json_encode($actionConfiguration)
-        );
-        $actionType = $payload->getValue('action.type');
+        $payload = RequestPayload::fromJson(json_encode($actionConfiguration));
 
-        if(empty($actionType)) {
-            throw new InvalidParameterException('Action type is required');
+        $actionType = $payload->getValue('action.type');
+        if (empty($actionType)) {
+            throw new InvalidParameterException('Watcher action.type is required');
+        }
+
+        $aggregatorType = $payload->getValue('aggregator.type');
+        if (empty($aggregatorType)) {
+            throw new InvalidParameterException('Watcher aggregator.type is required');
         }
 
         switch ($actionType) {
             case WatcherEmailAction::EMAIL_ACTION:
                 return new Watcher(
                     new Uuid($payload->getValue('_id')),
-                    $payload->getValue('name'),
+                    $payload->getValue('name', ''),
                     $eventType,
-                    $payload->getValue('threshold'),
+                    $payload->getValue('threshold', 0),
                     new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator.fields')
+                        $payload->getValue('aggregator.fields', [])
                     ),
                     WatcherEmailAction::create(
                         $payload->getValue('action')
@@ -82,6 +90,6 @@ class WatcherFactory
                 );
         }
 
-        throw new UnknownTypeException('Unknown action type: `' . $actionType . '`');
+        throw new UnknownTypeException('Unknown watcher action.type: `' . $actionType . '`');
     }
 }

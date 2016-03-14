@@ -6,9 +6,10 @@ use FastRoute\Dispatcher\GroupCountBased as FastRouteGroupCountBasedDispatcher;
 use FastRoute\RouteCollector as FastRouteCollector;
 use FastRoute\RouteParser\Std as FastRouteStdRouteParser;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Dispatcher;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -39,7 +40,10 @@ class DispatcherTest extends BaseTestCase
             new FastRouteGroupCountBasedDispatcher(
                 $routes->getRoutes()
             ),
-            new Configuration()
+            new FakeControllerFactory(
+                new InMemorySettings(),
+                new InMemoryCounters()
+            )
         );
     }
 

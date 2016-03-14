@@ -25,8 +25,8 @@ class CollectorFactory
         $payload = RequestPayload::fromJson($jsonPayload);
         $appenderType = $payload->getValue('appender.type');
 
-        if(empty($appenderType)) {
-            throw new InvalidParameterException('Collector appender type is required');
+        if (empty($appenderType)) {
+            throw new InvalidParameterException('Collector appender.type is required');
         }
 
         switch ($appenderType) {
@@ -40,7 +40,7 @@ class CollectorFactory
                 );
         }
 
-        throw new UnknownTypeException('Unknown collector appender type: `' . $appenderType . '`');
+        throw new UnknownTypeException('Unknown collector appender.type: `' . $appenderType . '`');
     }
 
     /**
@@ -57,8 +57,8 @@ class CollectorFactory
         );
         $appenderType = $payload->getValue('appender.type');
 
-        if(empty($appenderType)) {
-            throw new InvalidParameterException('Collector appender type is required');
+        if (empty($appenderType)) {
+            throw new InvalidParameterException('Collector appender.type is required');
         }
 
         switch ($appenderType) {
@@ -73,6 +73,6 @@ class CollectorFactory
                 );
         }
 
-        throw new UnknownTypeException('Unknown collector appender type: `' . $appenderType . '`');
+        throw new UnknownTypeException('Unknown collector appender.type: `' . $appenderType . '`');
     }
 }

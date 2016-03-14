@@ -1,9 +1,10 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
+use TSwiackiewicz\EventsCollector\Counters\Counters;
 use TSwiackiewicz\EventsCollector\Event\Event;
-use TSwiackiewicz\EventsCollector\Settings\SettingsRepository;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class WatcherService
@@ -14,9 +15,9 @@ class WatcherService
     const ACTION_MESSAGE = 'Event `%s` repeated %d times';
 
     /**
-     * @var SettingsRepository
+     * @var Settings
      */
-    private $repository;
+    private $settings;
 
     /**
      * @var WatcherActionHandlerFactory
@@ -24,23 +25,37 @@ class WatcherService
     private $factory;
 
     /**
-     * @var WatcherCounters
+     * @var Counters
      */
     private $counters;
 
     /**
-     * @param SettingsRepository $repository
+     * @param Settings $settings
      * @param WatcherActionHandlerFactory $factory
-     * @param WatcherCounters $counters
+     * @param Counters $counters
      */
     public function __construct(
-        SettingsRepository $repository,
+        Settings $settings,
         WatcherActionHandlerFactory $factory,
-        WatcherCounters $counters
+        Counters $counters
     ) {
-        $this->repository = $repository;
+        $this->settings = $settings;
         $this->factory = $factory;
         $this->counters = $counters;
+    }
+
+    /**
+     * @param Settings $settings
+     * @param Counters $counters
+     * @return WatcherService
+     */
+    public static function create(Settings $settings, Counters $counters)
+    {
+        return new static(
+            $settings,
+            new WatcherActionHandlerFactory(),
+            $counters
+        );
     }
 
     /**
@@ -49,7 +64,7 @@ class WatcherService
      */
     public function getEventWatchers($eventType)
     {
-        return $this->repository->getEventWatchers($eventType);
+        return $this->settings->getEventWatchers($eventType);
     }
 
     /**
@@ -59,7 +74,7 @@ class WatcherService
      */
     public function getEventWatcher($eventType, $watcherName)
     {
-        return $this->repository->getEventWatcher($eventType, $watcherName);
+        return $this->settings->getEventWatcher($eventType, $watcherName);
     }
 
     /**
@@ -68,7 +83,7 @@ class WatcherService
      */
     public function registerEventWatcher(Watcher $watcher)
     {
-        $this->repository->registerEventWatcher($watcher);
+        $this->settings->registerEventWatcher($watcher);
     }
 
     /**
@@ -78,7 +93,7 @@ class WatcherService
      */
     public function unregisterEventWatcher($eventType, $watcherName)
     {
-        $this->repository->unregisterEventWatcher($eventType, $watcherName);
+        $this->settings->unregisterEventWatcher($eventType, $watcherName);
     }
 
     /**
@@ -89,7 +104,7 @@ class WatcherService
         $watchers = $event->getWatchers();
         foreach ($watchers as $watcher) {
             $watcherCounter = $this->updateWatcherCounter($watcher);
-            if($watcherCounter > $watcher->getThreshold()) {
+            if ($watcherCounter > $watcher->getThreshold()) {
                 $this->handleWatcherAction($watcher, $watcherCounter);
             }
         }

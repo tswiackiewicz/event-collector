@@ -42,12 +42,12 @@ class WatcherEmailAction extends WatcherAction
         $toAddress = $this->parameters->get(self::TO_ADDRESS_PARAMETER);
         $subject = $this->parameters->get(self::SUBJECT_PARAMETER);
 
-        if(empty($toAddress)) {
-            throw new InvalidParameterException('Email action to address is required');
+        if (empty($toAddress)) {
+            throw new InvalidParameterException('Not empty email action.to address is required');
         }
 
-        if(empty($subject)) {
-            throw new InvalidParameterException('Email action subject is required');
+        if (empty($subject)) {
+            throw new InvalidParameterException('Not empty email action.subject is required');
         }
     }
 }

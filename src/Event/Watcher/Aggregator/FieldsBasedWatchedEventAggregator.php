@@ -31,8 +31,8 @@ class FieldsBasedWatchedEventAggregator implements WatchedEventAggregator
      */
     private function validateFields()
     {
-        if(empty($this->fields)) {
-            throw new InvalidParameterException('Not empty fields list expected for fields based watched event aggregator');
+        if (empty($this->fields)) {
+            throw new InvalidParameterException('Not empty aggregator.fields list expected for fields based aggregator');
         }
     }
 
@@ -42,9 +42,15 @@ class FieldsBasedWatchedEventAggregator implements WatchedEventAggregator
      */
     public function buildAggregationKey($eventType)
     {
-        array_unshift($this->fields, $eventType);
-
-        return implode(self::KEY_PARTS_SEPARATOR, $this->fields);
+        return implode(
+            self::KEY_PARTS_SEPARATOR,
+            array_merge(
+                [
+                    $eventType
+                ],
+                $this->fields
+            )
+        );
     }
 
     /**

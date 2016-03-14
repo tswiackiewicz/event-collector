@@ -3,9 +3,11 @@ namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Counters\Counters;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
 /**
  * Class WatcherController
@@ -34,6 +36,19 @@ class WatcherController
     }
 
     /**
+     * @param Settings $settings
+     * @param Counters $counters
+     * @return WatcherController
+     */
+    public static function create(Settings $settings, Counters $counters)
+    {
+        $service = WatcherService::create($settings, $counters);
+        $factory = new WatcherFactory();
+
+        return new static($service, $factory);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */
@@ -53,9 +68,9 @@ class WatcherController
             }
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -78,9 +93,9 @@ class WatcherController
             );
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -105,11 +120,11 @@ class WatcherController
             $this->service->registerEventWatcher($watcher);
 
         } catch (AlreadyRegisteredException $registered) {
-            return (new JsonException(JsonResponse::HTTP_CONFLICT, $registered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $registered->getMessage());
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
@@ -134,9 +149,9 @@ class WatcherController
             );
 
         } catch (NotRegisteredException $notRegistered) {
-            return (new JsonException(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
         } catch (\Exception $e) {
-            return (new JsonException(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage()))->getJsonResponse();
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(

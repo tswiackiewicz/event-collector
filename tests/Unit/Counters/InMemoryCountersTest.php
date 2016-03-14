@@ -1,15 +1,15 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Watcher;
+namespace TSwiackiewicz\EventsCollector\Tests\Unit\Counters;
 
-use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherCounters;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
- * Class WatcherCountersTest
- * @package TSwiackiewicz\EventsCollector\Tests\Unit\Event\Watcher
+ * Class InMemoryCountersTest
+ * @package TSwiackiewicz\EventsCollector\Tests\Unit\Counters
  */
-class WatcherCountersTest extends BaseTestCase
+class InMemoryCountersTest extends BaseTestCase
 {
     /**
      * @var string
@@ -21,7 +21,7 @@ class WatcherCountersTest extends BaseTestCase
      */
     public function shouldIncreaseCounter()
     {
-        $counters = WatcherCounters::init();
+        $counters = new InMemoryCounters();
         $currentCounter = $counters->getCounter($this->key);
 
         $this->assertEquals($currentCounter + 1, $counters->increaseCounter($this->key));
@@ -34,7 +34,7 @@ class WatcherCountersTest extends BaseTestCase
     public function shouldReturnCounter()
     {
         $counter = 100;
-        $counters = new WatcherCounters([$this->key => $counter]);
+        $counters = new InMemoryCounters([$this->key => $counter]);
 
         $this->assertEquals($counter, $counters->getCounter($this->key));
     }
@@ -44,7 +44,7 @@ class WatcherCountersTest extends BaseTestCase
      */
     public function shouldReturnAllCounters()
     {
-        $counters = WatcherCounters::init();
+        $counters = new InMemoryCounters();
 
         $counters->increaseCounter('key1');
         $counters->increaseCounter('key1');
@@ -68,7 +68,7 @@ class WatcherCountersTest extends BaseTestCase
      */
     public function shouldClearCounters()
     {
-        $counters = WatcherCounters::init();
+        $counters = new InMemoryCounters();
 
         $counters->increaseCounter('key1');
         $counters->increaseCounter('key1');
@@ -99,7 +99,7 @@ class WatcherCountersTest extends BaseTestCase
     {
         $this->setExpectedException(InvalidParameterException::class);
 
-        $counters = WatcherCounters::init();
+        $counters = new InMemoryCounters();
         $counters->getCounter($invalidKey);
     }
 

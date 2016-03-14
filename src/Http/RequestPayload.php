@@ -46,17 +46,20 @@ class RequestPayload
 
     /**
      * @param string $key
+     * @param array|string|int|float|bool|null $default
      * @return array|string|int|float|bool|null
      */
-    public function getValue($key)
+    public function getValue($key, $default = null)
     {
         $value = $this->payload;
 
         $keyParts = $this->getKeyParts($key);
         foreach ($keyParts as $keyPart) {
-            if(isset($value[$keyPart])) {
+            if (isset($value[$keyPart])) {
                 $value = $value[$keyPart];
                 continue;
+            } else {
+                $value = $default;
             }
         }
 
