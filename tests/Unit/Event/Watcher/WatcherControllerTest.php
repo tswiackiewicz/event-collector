@@ -36,6 +36,19 @@ class WatcherControllerTest extends BaseTestCase
     /**
      * @test
      */
+    public function shouldCreateWatcherController()
+    {
+        $controller = WatcherController::create(
+            new InMemorySettings(),
+            new InMemoryCounters()
+        );
+
+        $this->assertInstanceOf(WatcherController::class, $controller);
+    }
+
+    /**
+     * @test
+     */
     public function shouldReturnEventWatchers()
     {
         $request = $this->createRequest();

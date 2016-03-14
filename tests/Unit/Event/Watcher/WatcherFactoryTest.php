@@ -54,7 +54,8 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(UnknownTypeException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->create('test_event', '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":{"type":"unknown_type"}}');
+        $factory->create('test_event',
+            '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":{"type":"unknown_type"}}');
     }
 
     /**

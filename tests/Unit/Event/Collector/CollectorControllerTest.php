@@ -35,6 +35,16 @@ class CollectorControllerTest extends BaseTestCase
     /**
      * @test
      */
+    public function shouldCreateController()
+    {
+        $controller = CollectorController::create(new InMemorySettings());
+
+        $this->assertInstanceOf(CollectorController::class, $controller);
+    }
+
+    /**
+     * @test
+     */
     public function shouldReturnEventCollectors()
     {
         $request = $this->createRequest();
@@ -59,28 +69,6 @@ class CollectorControllerTest extends BaseTestCase
             ],
             [
                 'event' => $this->event,
-                'collector' => $this->collector
-            ],
-            [],
-            [],
-            [],
-            [],
-            $this->payload
-        );
-    }
-
-    /**
-     * @return Request
-     */
-    private function createRequestWithInvalidEventType()
-    {
-        return new Request(
-            [
-                'event' => [],
-                'collector' => $this->collector
-            ],
-            [
-                'event' => [],
                 'collector' => $this->collector
             ],
             [],
@@ -126,6 +114,19 @@ class CollectorControllerTest extends BaseTestCase
     }
 
     /**
+     * @return CollectorController
+     */
+    private function createCollectorControllerWithoutEventRegistered()
+    {
+        $service = new CollectorService(
+            new InMemorySettings(),
+            new CollectorAppenderHandlerFactory()
+        );
+
+        return new CollectorController($service, new CollectorFactory());
+    }
+
+    /**
      * @test
      */
     public function shouldReturnHttpBadRequestResponseWhenReturnCollectorsForInvalidEventType()
@@ -139,16 +140,25 @@ class CollectorControllerTest extends BaseTestCase
     }
 
     /**
-     * @return CollectorController
+     * @return Request
      */
-    private function createCollectorControllerWithoutEventRegistered()
+    private function createRequestWithInvalidEventType()
     {
-        $service = new CollectorService(
-            new InMemorySettings(),
-            new CollectorAppenderHandlerFactory()
+        return new Request(
+            [
+                'event' => [],
+                'collector' => $this->collector
+            ],
+            [
+                'event' => [],
+                'collector' => $this->collector
+            ],
+            [],
+            [],
+            [],
+            [],
+            $this->payload
         );
-
-        return new CollectorController($service, new CollectorFactory());
     }
 
     /**

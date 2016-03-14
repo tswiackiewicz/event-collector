@@ -42,6 +42,19 @@ class EventControllerTest extends BaseTestCase
     /**
      * @test
      */
+    public function shouldCreateEventController()
+    {
+        $controller = EventController::create(
+            new InMemorySettings(),
+            new InMemoryCounters()
+        );
+
+        $this->assertInstanceOf(EventController::class, $controller);
+    }
+
+    /**
+     * @test
+     */
     public function shouldReturnAllRegisteredEventsAsJsonResponse()
     {
         $request = $this->createRequest();
@@ -273,6 +286,7 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
+     * @param array $watcherCounters
      * @return EventController
      */
     private function createEventControllerWithRegisteredCollector(array $watcherCounters = [])
@@ -363,6 +377,7 @@ class EventControllerTest extends BaseTestCase
 
     /**
      * @param Settings $settings
+     * @param array $watcherCounters
      * @return WatcherService
      */
     private function createWatcherService(Settings $settings, array $watcherCounters)
