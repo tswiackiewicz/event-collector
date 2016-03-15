@@ -25,7 +25,6 @@ class InMemoryCountersTest extends BaseTestCase
         $currentCounter = $counters->getCounter($this->key);
 
         $this->assertEquals($currentCounter + 1, $counters->increaseCounter($this->key));
-
     }
 
     /**

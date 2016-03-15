@@ -1,44 +1,18 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event;
 
-use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
-use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandler;
-use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandlerFactory;
-use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
-use TSwiackiewicz\EventsCollector\Event\Collector\CollectorFactory;
-use TSwiackiewicz\EventsCollector\Event\Collector\CollectorService;
-use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Event\EventController;
-use TSwiackiewicz\EventsCollector\Event\EventService;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandler;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
-use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherFactory;
-use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherService;
 use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
-use TSwiackiewicz\EventsCollector\Settings\Settings;
-use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
  * Class EventControllerTest
  * @package TSwiackiewicz\EventsCollector\Tests\Unit\Event
  */
-class EventControllerTest extends BaseTestCase
+class EventControllerTest extends ControllerBaseTestCase
 {
-    /**
-     * @var string
-     */
-    private $event = 'event_type';
-
-    /**
-     * @var string
-     */
-    private $payload = '{"type":"test_event"}';
-
     /**
      * @test
      */
@@ -68,59 +42,6 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
-     * @return Request
-     */
-    private function createRequest()
-    {
-        return new Request(
-            [
-                'event' => $this->event
-            ],
-            [
-                'event' => $this->event
-            ],
-            [],
-            [],
-            [],
-            [],
-            $this->payload
-        );
-    }
-
-    /**
-     * @return EventController
-     */
-    private function createEventController()
-    {
-        $events[$this->event] = Event::create($this->event);
-        $settings = new InMemorySettings($events);
-
-        $service = new EventService(
-            $settings,
-            new CollectorService(
-                $settings,
-                new CollectorAppenderHandlerFactory()
-            ),
-            new WatcherService(
-                $settings,
-                new WatcherActionHandlerFactory(),
-                new InMemoryCounters()
-            )
-        );
-
-        return new EventController($service);
-    }
-
-    /**
-     * @param JsonResponse $response
-     * @param $statusCode
-     */
-    private function assertResponse(JsonResponse $response, $statusCode)
-    {
-        $this->assertEquals($statusCode, $response->getStatusCode());
-    }
-
-    /**
      * @test
      */
     public function shouldReturnEvent()
@@ -145,59 +66,16 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
-     * @return EventController
-     */
-    private function createEventControllerWithoutEventRegistered()
-    {
-        $settings = new InMemorySettings();
-
-        $service = new EventService(
-            $settings,
-            new CollectorService(
-                $settings,
-                new CollectorAppenderHandlerFactory()
-            ),
-            new WatcherService(
-                $settings,
-                new WatcherActionHandlerFactory(),
-                new InMemoryCounters()
-            )
-        );
-
-        return new EventController($service);
-    }
-
-    /**
      * @test
      */
     public function shouldReturnBadRequestResponseWhenReturningEventWithInvalidEventType()
     {
         $controller = $this->createEventController();
-        $response = $controller->getEvent($this->createRequestWithInvalidEventType());
+        $response = $controller->getEvent(
+            $this->createRequestWithInvalidEventType([], '{"type": []}')
+        );
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
-    }
-
-    /**
-     * @return Request
-     */
-    private function createRequestWithInvalidEventType()
-    {
-        $invalidEventType = [];
-
-        return new Request(
-            [
-                'event' => $invalidEventType
-            ],
-            [
-                'event' => $invalidEventType
-            ],
-            [],
-            [],
-            [],
-            [],
-            '{"type": []}'
-        );
     }
 
     /**
@@ -230,7 +108,9 @@ class EventControllerTest extends BaseTestCase
     public function shouldReturnBadRequestResponseWhenUnregisterEventWithInvalidEventType()
     {
         $controller = $this->createEventController();
-        $response = $controller->unregisterEvent($this->createRequestWithInvalidEventType());
+        $response = $controller->unregisterEvent(
+            $this->createRequestWithInvalidEventType([], '{"type": []}')
+        );
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -269,7 +149,9 @@ class EventControllerTest extends BaseTestCase
     public function shouldReturnBadRequestResponseWhenRegisterEventWithInvalidEventType()
     {
         $controller = $this->createEventController();
-        $response = $controller->registerEvent($this->createRequestWithInvalidEventType());
+        $response = $controller->registerEvent(
+            $this->createRequestWithInvalidEventType([], '{"type": []}')
+        );
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -283,124 +165,6 @@ class EventControllerTest extends BaseTestCase
         $response = $controller->collectEvent($this->createRequest());
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
-    }
-
-    /**
-     * @param array $watcherCounters
-     * @return EventController
-     */
-    private function createEventControllerWithRegisteredCollector(array $watcherCounters = [])
-    {
-        $settings = new InMemorySettings();
-        $settings->registerEvent(Event::create($this->event));
-        $settings->registerEventCollector($this->createCollector());
-        $settings->registerEventWatcher($this->createWatcher());
-
-        $service = new EventService(
-            $settings,
-            $this->createCollectorService($settings),
-            $this->createWatcherService($settings, $watcherCounters)
-        );
-
-        return new EventController($service);
-    }
-
-    /**
-     * @return Collector
-     */
-    private function createCollector()
-    {
-        $factory = new CollectorFactory();
-
-        return $factory->createFromArray(
-            $this->event,
-            [
-                '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
-                'name' => 'test_collector',
-                'appender' => [
-                    'type' => 'syslog',
-                    'ident' => 'test'
-                ]
-            ]
-        );
-    }
-
-    /**
-     * @return Watcher
-     */
-    private function createWatcher()
-    {
-        $factory = new WatcherFactory();
-
-        return $factory->createFromArray(
-            $this->event,
-            [
-                '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
-                'name' => 'test_watcher',
-                'threshold' => 100,
-                'aggregator' => [
-                    'type' => 'fields',
-                    'fields' => [
-                        'field1',
-                        'field2'
-                    ]
-                ],
-                'action' => [
-                    'type' => 'email',
-                    'to' => 'user@domain.com',
-                    'subject' => 'Test subject'
-                ]
-            ]
-        );
-    }
-
-    /**
-     * @param Settings $settings
-     * @return CollectorService
-     */
-    private function createCollectorService(Settings $settings)
-    {
-        $handler = new CollectorAppenderHandler(new NullLogger());
-
-        $factory = $this->getMockBuilder(CollectorAppenderHandlerFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(
-                [
-                    'createFromCollectorAppender'
-                ]
-            )
-            ->getMock();
-        $factory->expects($this->any())->method('createFromCollectorAppender')->willReturn($handler);
-
-        return new CollectorService($settings, $factory);
-    }
-
-    /**
-     * @param Settings $settings
-     * @param array $watcherCounters
-     * @return WatcherService
-     */
-    private function createWatcherService(Settings $settings, array $watcherCounters)
-    {
-        $handler = $this->getMockBuilder(WatcherActionHandler::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-
-        $factory = $this->getMockBuilder(WatcherActionHandlerFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(
-                [
-                    'createFromWatcherAction'
-                ]
-            )
-            ->getMock();
-        $factory->expects($this->any())->method('createFromWatcherAction')->willReturn($handler);
-
-        return new WatcherService(
-            $settings,
-            $factory,
-            new InMemoryCounters($watcherCounters)
-        );
     }
 
     /**
@@ -454,7 +218,9 @@ class EventControllerTest extends BaseTestCase
     public function shouldReturnHttpBadRequestResponseWhenCollectingEventWithInvalidType()
     {
         $controller = $this->createEventControllerWithRegisteredCollector();
-        $response = $controller->collectEvent($this->createRequestWithInvalidEventType());
+        $response = $controller->collectEvent(
+            $this->createRequestWithInvalidEventType([], '{"type": []}')
+        );
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -471,22 +237,10 @@ class EventControllerTest extends BaseTestCase
     }
 
     /**
-     * @return Request
+     * @return string
      */
-    private function createRequestWithEmptyPayload()
+    protected function buildPayload()
     {
-        return new Request(
-            [
-                'event' => $this->event
-            ],
-            [
-                'event' => $this->event
-            ],
-            [],
-            [],
-            [],
-            [],
-            ''
-        );
+        return '{"type":"test_event"}';
     }
 }

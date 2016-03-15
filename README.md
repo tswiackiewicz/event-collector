@@ -25,16 +25,14 @@ Events collection and alerting asynchronous daemon
 
 * not JSON payloads error support -> 0.2.0
 * fix: JsonException only in controller & dispatcher -> 0.2.0
-* counters repository + in memory
-* unit tests base tests extended
+* allow to create single / fields aggregator -> 0.2.0
+* allow to create null collector appender -> 0.2.0
+* allow to create null watcher action -> 0.2.0
 
 * documentation -> 0.3.0
 * postman test case scenarios -> 0.3.0
 * server activities log - Monolog -> 0.3.0
 * validate configuration object using defined regex expression -> 0.3.0
-* allow to create single / fields aggregator -> 0.3.0
-* allow to create null collector appender -> 0.3.0
-* allow to create null watcher action -> 0.3.0
 
 * settings (loaded from config/config.yml) validation via symfony/config -> 0.4.0
 * clear / get alerting counters API -> 0.4.0
