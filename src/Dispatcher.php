@@ -5,8 +5,8 @@ namespace TSwiackiewicz\EventsCollector;
 use FastRoute\Dispatcher as FastRouteDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
 
 /**
  * Class Dispatcher
@@ -93,12 +93,11 @@ class Dispatcher
                 return $response;
             }
 
-            throw new JsonException(
-                JsonResponse::HTTP_CONFLICT,
+            throw new InvalidControllerDefinitionException(
                 'Defined controller action must return Symfony\Component\HttpFoundation\JsonResponse'
             );
-        } catch (JsonException $e) {
-            return $e->getJsonResponse();
+        } catch (InvalidControllerDefinitionException $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $e->getMessage());
         }
     }
 
@@ -106,13 +105,12 @@ class Dispatcher
      * @param string[] $controller
      * @param array $attributes
      * @return mixed
-     * @throws JsonException
+     * @throws InvalidControllerDefinitionException
      */
     private function invokeController(array $controller, array $attributes = [])
     {
         if (count($controller) != 2) {
-            throw new JsonException(
-                JsonResponse::HTTP_CONFLICT,
+            throw new InvalidControllerDefinitionException(
                 'Defined controller must contain class name and callback method name'
             );
         }

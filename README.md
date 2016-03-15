@@ -24,7 +24,6 @@ Events collection and alerting asynchronous daemon
 ## TODO
 
 * not JSON payloads error support -> 0.2.0
-* fix: JsonException only in controller & dispatcher -> 0.2.0
 * allow to create single / fields aggregator -> 0.2.0
 * allow to create null collector appender -> 0.2.0
 * allow to create null watcher action -> 0.2.0

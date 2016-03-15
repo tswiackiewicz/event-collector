@@ -68,11 +68,6 @@ class DispatcherTest extends BaseTestCase
             [FakeController::class, 'invalidCallback']
         );
         $routes->addRoute(
-            'DELETE',
-            '/error/',
-            [FakeController::class, 'throwableCallback']
-        );
-        $routes->addRoute(
             'GET',
             '/invalid_controller/',
             ['throwableCallback']
@@ -102,17 +97,6 @@ class DispatcherTest extends BaseTestCase
         $decodedResponse = json_decode($content, true);
 
         $this->assertEquals($statusCode, $decodedResponse['status_code']);
-    }
-
-    /**
-     * @test
-     */
-    public function shouldDispatchWithExceptionRaised()
-    {
-        $dispatcher = $this->createDispatcher();
-        $response = $dispatcher->dispatch('DELETE', '/error/', '');
-
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
     }
 
     /**

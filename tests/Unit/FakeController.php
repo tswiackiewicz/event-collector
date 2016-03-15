@@ -2,7 +2,6 @@
 namespace TSwiackiewicz\EventsCollector\Tests\Unit;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
 
 /**
  * Class FakeController
@@ -32,13 +31,10 @@ class FakeController
     }
 
     /**
-     * @throws JsonException
+     * @throws \RuntimeException
      */
     public function throwableCallback()
     {
-        throw new JsonException(
-            JsonResponse::HTTP_CONFLICT,
-            'Error occurs'
-        );
+        throw new \RuntimeException('Error occurs');
     }
 }
