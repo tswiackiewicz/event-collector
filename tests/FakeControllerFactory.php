@@ -1,12 +1,12 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Tests\Unit;
+namespace TSwiackiewicz\EventsCollector\Tests;
 
 use TSwiackiewicz\EventsCollector\ControllerFactory;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 
 /**
  * Class FakeControllerFactory
- * @package TSwiackiewicz\EventsCollector\Tests\Unit
+ * @package TSwiackiewicz\EventsCollector\Tests
  */
 class FakeControllerFactory extends ControllerFactory
 {

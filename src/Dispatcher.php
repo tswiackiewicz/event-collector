@@ -6,7 +6,9 @@ use FastRoute\Dispatcher as FastRouteDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
+use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 
 /**
  * Class Dispatcher
@@ -98,6 +100,8 @@ class Dispatcher
             );
         } catch (InvalidControllerDefinitionException $e) {
             return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $e->getMessage());
+        } catch (InvalidParameterException $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
     }
 
@@ -130,9 +134,14 @@ class Dispatcher
      * @param string $query
      * @param string $payload
      * @return Request
+     * @throws InvalidParameterException
      */
     private function buildRequest($method, $uri, $query, $payload)
     {
+        if (!empty($payload) && false === RequestPayload::isJsonPayload($payload)) {
+            throw new InvalidParameterException('Only string JSON payload is accepted');
+        }
+
         return Request::create(
             $uri,
             $method,

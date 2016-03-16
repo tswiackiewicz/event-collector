@@ -15,7 +15,7 @@ class EventService
     /**
      * @var Settings
      */
-    private $repository;
+    private $settings;
 
     /**
      * @var CollectorService
@@ -28,16 +28,16 @@ class EventService
     private $watcherService;
 
     /**
-     * @param Settings $repository
+     * @param Settings $settings
      * @param CollectorService $collectorService
      * @param WatcherService $watcherService
      */
     public function __construct(
-        Settings $repository,
+        Settings $settings,
         CollectorService $collectorService,
         WatcherService $watcherService
     ) {
-        $this->repository = $repository;
+        $this->settings = $settings;
         $this->collectorService = $collectorService;
         $this->watcherService = $watcherService;
     }
@@ -61,7 +61,7 @@ class EventService
      */
     public function getEvents()
     {
-        return $this->repository->getEvents();
+        return $this->settings->getEvents();
     }
 
     /**
@@ -70,7 +70,7 @@ class EventService
      */
     public function getEvent($eventType)
     {
-        return $this->repository->getEvent($eventType);
+        return $this->settings->getEvent($eventType);
     }
 
     /**
@@ -78,7 +78,7 @@ class EventService
      */
     public function registerEvent(Event $event)
     {
-        $this->repository->registerEvent($event);
+        $this->settings->registerEvent($event);
     }
 
     /**
@@ -86,7 +86,7 @@ class EventService
      */
     public function unregisterEvent($eventType)
     {
-        $this->repository->unregisterEvent($eventType);
+        $this->settings->unregisterEvent($eventType);
     }
 
     /**

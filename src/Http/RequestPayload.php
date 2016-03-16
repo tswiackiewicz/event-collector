@@ -46,8 +46,8 @@ class RequestPayload
 
     /**
      * @param string $key
-     * @param array|string|int|float|bool|null $default
-     * @return array|string|int|float|bool|null
+     * @param mixed $default
+     * @return mixed
      */
     public function getValue($key, $default = null)
     {

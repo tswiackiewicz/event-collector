@@ -14,7 +14,6 @@ use TSwiackiewicz\EventsCollector\Event\Collector\CollectorService;
 use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Event\EventController;
 use TSwiackiewicz\EventsCollector\Event\EventService;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandler;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherController;
@@ -282,8 +281,7 @@ abstract class ControllerBaseTestCase extends BaseTestCase
                 '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
                 'name' => $this->collector,
                 'appender' => [
-                    'type' => 'syslog',
-                    'ident' => 'test'
+                    'type' => 'null'
                 ]
             ]
         );
@@ -310,9 +308,7 @@ abstract class ControllerBaseTestCase extends BaseTestCase
                     ]
                 ],
                 'action' => [
-                    'type' => 'email',
-                    'to' => 'user@domain.com',
-                    'subject' => 'Test subject'
+                    'type' => 'null'
                 ]
             ]
         );
@@ -346,23 +342,9 @@ abstract class ControllerBaseTestCase extends BaseTestCase
      */
     private function createWatcherService(Settings $settings, array $watcherCounters)
     {
-        $handler = $this->getMockBuilder(WatcherActionHandler::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-
-        $factory = $this->getMockBuilder(WatcherActionHandlerFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(
-                [
-                    'createFromWatcherAction'
-                ]
-            )
-            ->getMock();
-        $factory->expects($this->any())->method('createFromWatcherAction')->willReturn($handler);
-
         return new WatcherService(
             $settings,
-            $factory,
+            new WatcherActionHandlerFactory(),
             new InMemoryCounters($watcherCounters)
         );
     }

@@ -1,11 +1,11 @@
 <?php
-namespace TSwiackiewicz\EventsCollector\Tests\Unit;
+namespace TSwiackiewicz\EventsCollector\Tests;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class FakeController
- * @package TSwiackiewicz\EventsCollector\Tests\Unit
+ * @package TSwiackiewicz\EventsCollector\Tests
  */
 class FakeController
 {

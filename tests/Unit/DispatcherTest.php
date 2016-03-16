@@ -11,6 +11,8 @@ use TSwiackiewicz\EventsCollector\Dispatcher;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
+use TSwiackiewicz\EventsCollector\Tests\FakeController;
+use TSwiackiewicz\EventsCollector\Tests\FakeControllerFactory;
 
 /**
  * Class DispatcherTest
@@ -72,6 +74,11 @@ class DispatcherTest extends BaseTestCase
             '/invalid_controller/',
             ['throwableCallback']
         );
+        $routes->addRoute(
+            'POST',
+            '/invalid_json_payload/',
+            [FakeController::class, 'successfulCallback']
+        );
 
         return new RoutesCollection($routes);
     }
@@ -130,5 +137,17 @@ class DispatcherTest extends BaseTestCase
         $response = $dispatcher->dispatch('GET', '/invalid_controller/', '');
 
         $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldDispatchRequestWithInvalidPayload()
+    {
+        $dispatcher = $this->createDispatcher();
+        $response = $dispatcher->dispatch('POST', '/invalid_json_payload/',
+            'payload=invalid_json_payload&error_expected=true');
+
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 }
