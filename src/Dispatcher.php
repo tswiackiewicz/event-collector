@@ -5,8 +5,10 @@ namespace TSwiackiewicz\EventsCollector;
 use FastRoute\Dispatcher as FastRouteDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
-use TSwiackiewicz\EventsCollector\Http\JsonException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
+use TSwiackiewicz\EventsCollector\Http\RequestPayload;
 
 /**
  * Class Dispatcher
@@ -20,26 +22,18 @@ class Dispatcher
     private $baseDispatcher;
 
     /**
-     * @var Configuration
+     * @var ControllerFactory
      */
-    private $configuration;
+    private $factory;
 
     /**
      * @param FastRouteDispatcher $baseDispatcher
-     * @param Configuration $configuration
+     * @param ControllerFactory $factory
      */
-    public function __construct(FastRouteDispatcher $baseDispatcher, Configuration $configuration)
+    public function __construct(FastRouteDispatcher $baseDispatcher, ControllerFactory $factory)
     {
         $this->baseDispatcher = $baseDispatcher;
-        $this->configuration = $configuration;
-    }
-
-    /**
-     * @return Configuration
-     */
-    public function getConfiguration()
-    {
-        return $this->configuration;
+        $this->factory = $factory;
     }
 
     /**
@@ -68,7 +62,7 @@ class Dispatcher
      */
     private function handleNotFound()
     {
-        return (new JsonException(JsonResponse::HTTP_NOT_FOUND, 'Not Found'))->getJsonResponse();
+        return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, 'Not Found');
     }
 
     /**
@@ -76,62 +70,57 @@ class Dispatcher
      */
     private function handleNotAllowed()
     {
-        return (new JsonException(JsonResponse::HTTP_METHOD_NOT_ALLOWED, 'Method Not Allowed'))->getJsonResponse();
+        return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_METHOD_NOT_ALLOWED, 'Method Not Allowed');
     }
 
     /**
-     * @param string[] $controller
+     * @param string[] $controllerDefinition
      * @param string $method
      * @param string $uri
      * @param string $query
      * @param string $payload
      * @return JsonResponse
      */
-    private function handleFound(array $controller, $method, $uri, $query, $payload)
+    private function handleFound(array $controllerDefinition, $method, $uri, $query, $payload)
     {
         try {
             $response = $this->invokeController(
-                $controller,
-                [
-                    $this->buildRequest($method, $uri, $query, $payload)
-                ]
+                $controllerDefinition,
+                $this->buildRequest($method, $uri, $query, $payload)
             );
 
             if ($response instanceof JsonResponse) {
                 return $response;
             }
 
-            throw new JsonException(
-                JsonResponse::HTTP_CONFLICT,
+            throw new InvalidControllerDefinitionException(
                 'Defined controller action must return Symfony\Component\HttpFoundation\JsonResponse'
             );
-        } catch (JsonException $e) {
-            return $e->getJsonResponse();
+        } catch (InvalidControllerDefinitionException $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
+        } catch (InvalidParameterException $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
     }
 
     /**
-     * @param string[] $controller
-     * @param array $attributes
-     * @return mixed
-     * @throws JsonException
+     * @param string[] $controllerDefinition
+     * @param Request $request
+     * @return JsonResponse
+     * @throws InvalidControllerDefinitionException
      */
-    private function invokeController(array $controller, array $attributes = [])
+    private function invokeController(array $controllerDefinition, Request $request)
     {
-        if (count($controller) != 2) {
-            throw new JsonException(
-                JsonResponse::HTTP_CONFLICT,
+        if (count($controllerDefinition) != 2) {
+            throw new InvalidControllerDefinitionException(
                 'Defined controller must contain class name and callback method name'
             );
         }
 
-        return call_user_func_array(
-            [
-                new $controller[0]($this->configuration),
-                $controller[1]
-            ],
-            array_values($attributes)
-        );
+        /** @var Controller $controller */
+        $controller = $this->factory->create($controllerDefinition[0]);
+
+        return $controller->invoke($controllerDefinition[1], $request);
     }
 
     /**
@@ -140,9 +129,14 @@ class Dispatcher
      * @param string $query
      * @param string $payload
      * @return Request
+     * @throws InvalidParameterException
      */
     private function buildRequest($method, $uri, $query, $payload)
     {
+        if (!empty($payload) && false === RequestPayload::isJsonPayload($payload)) {
+            throw new InvalidParameterException('Only string JSON payload is accepted');
+        }
+
         return Request::create(
             $uri,
             $method,
@@ -152,5 +146,13 @@ class Dispatcher
             [],
             $payload
         );
+    }
+
+    /**
+     * @param string $file
+     */
+    public function dumpSettings($file)
+    {
+        $this->factory->dumpSettings($file);
     }
 }

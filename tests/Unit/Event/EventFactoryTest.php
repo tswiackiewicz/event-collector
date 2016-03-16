@@ -14,10 +14,9 @@ class EventFactoryTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateAction()
+    public function shouldCreateEvent()
     {
         $factory = $this->createEventFactory();
-
         $event = $factory->createFromArray(
             [
                 '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
@@ -26,19 +25,24 @@ class EventFactoryTest extends BaseTestCase
                     [
                         '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
                         'name' => 'test_collector',
-                        'target' => [
+                        'appender' => [
                             'type' => 'syslog',
                             'ident' => 'test'
                         ]
                     ]
                 ],
-                'actions' => [
+                'watchers' => [
                     [
                         '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
                         'name' => 'test_action',
                         'threshold' => 100,
-                        'aggregation_key' => [],
-                        'target' => [
+                        'aggregator' => [
+                            'type' => 'single',
+                            'fields' => [
+                                'field_name'
+                            ]
+                        ],
+                        'action' => [
                             'type' => 'email',
                             'to' => 'user@domain.com',
                             'subject' => 'Test subject'

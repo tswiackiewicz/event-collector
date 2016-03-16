@@ -2,9 +2,11 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use TSwiackiewicz\EventsCollector\ControllerFactory;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 use TSwiackiewicz\EventsCollector\Server;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 
 $dotenv = new Dotenv\Dotenv(__DIR__ . '/..');
 $dotenv->load();
@@ -12,7 +14,10 @@ $dotenv->load();
 $routes = RoutesCollection::create();
 $routes->registerDefaultRoutes();
 
-$configuration = Configuration::loadFromFile();
+$factory = new ControllerFactory(
+    InMemorySettings::loadFromFile(),
+    new InMemoryCounters()
+);
 
-$server = Server::create($routes, $configuration);
+$server = Server::create($routes, $factory);
 $server->listen(getenv('PORT'), getenv('HOST'));

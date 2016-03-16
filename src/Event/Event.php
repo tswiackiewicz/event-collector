@@ -1,14 +1,11 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
-use TSwiackiewicz\EventsCollector\Action\Action;
-use TSwiackiewicz\EventsCollector\Action\Exception\ActionAlreadyRegisteredException;
-use TSwiackiewicz\EventsCollector\Action\Exception\NotRegisteredActionException;
-use TSwiackiewicz\EventsCollector\Collector\Collector;
-use TSwiackiewicz\EventsCollector\Collector\Exception\CollectorAlreadyRegisteredException;
-use TSwiackiewicz\EventsCollector\Collector\Exception\NotRegisteredCollectorException;
-use TSwiackiewicz\EventsCollector\Event\Exception\InvalidEventParameterException;
+use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
+use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
+use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 use TSwiackiewicz\EventsCollector\Uuid;
 
 /**
@@ -17,7 +14,7 @@ use TSwiackiewicz\EventsCollector\Uuid;
  */
 class Event
 {
-    const VALID_EVENT_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
+    const EVENT_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9_-]+';
 
     /**
      * @var Uuid
@@ -35,63 +32,62 @@ class Event
     private $collectors;
 
     /**
-     * @var Action[]
+     * @var Watcher[]
      */
-    private $actions;
+    private $watchers;
 
     /**
      * @param Uuid $id
      * @param string $type
      * @param Collector[] $collectors
-     * @param Action[] $actions
+     * @param Watcher[] $watchers
      */
-    public function __construct(Uuid $id, $type, array $collectors = [], array $actions = [])
+    public function __construct(Uuid $id, $type, array $collectors = [], array $watchers = [])
     {
         $this->id = $id;
         $this->type = $type;
         $this->collectors = $collectors;
-        $this->actions = $actions;
+        $this->watchers = $watchers;
 
         $this->validateType();
     }
 
     /**
-     * @throws InvalidEventParameterException
+     * @throws InvalidParameterException
      */
     private function validateType()
     {
         if (empty($this->type) || !is_string($this->type)) {
-            throw new InvalidEventParameterException(JsonResponse::HTTP_BAD_REQUEST, 'Event type is required');
+            throw new InvalidParameterException('Event type is required');
         }
     }
 
     /**
      * @param string $type
      * @param Collector[] $collectors
-     * @param Action[] $actions
+     * @param Watcher[] $watchers
      * @return Event
      */
-    public static function create($type, array $collectors = [], array $actions = [])
+    public static function create($type, array $collectors = [], array $watchers = [])
     {
         return new static(
             Uuid::generate(),
             $type,
             $collectors,
-            $actions
+            $watchers
         );
     }
 
     /**
      * @param Collector $collector
-     * @throws CollectorAlreadyRegisteredException
+     * @throws AlreadyRegisteredException
      */
     public function addCollector(Collector $collector)
     {
         $collectorName = $collector->getName();
 
         if (!empty($this->collectors[$collectorName])) {
-            throw new CollectorAlreadyRegisteredException(
-                JsonResponse::HTTP_CONFLICT,
+            throw new AlreadyRegisteredException(
                 'Collector `' . $collectorName . '` already registered for event `' . $this->type . '`'
             );
         }
@@ -112,13 +108,12 @@ class Event
     /**
      * @param string $collectorName
      * @return Collector
-     * @throws NotRegisteredCollectorException
+     * @throws NotRegisteredException
      */
     public function getCollector($collectorName)
     {
         if (empty($this->collectors[$collectorName])) {
-            throw new NotRegisteredCollectorException(
-                JsonResponse::HTTP_NOT_FOUND,
+            throw new NotRegisteredException(
                 'Collector `' . $collectorName . '` is not registered for event type `' . $this->type . '`'
             );
         }
@@ -135,56 +130,54 @@ class Event
     }
 
     /**
-     * @param Action $action
-     * @throws ActionAlreadyRegisteredException
+     * @param Watcher $watcher
+     * @throws AlreadyRegisteredException
      */
-    public function addAction(Action $action)
+    public function addWatcher(Watcher $watcher)
     {
-        $actionName = $action->getName();
+        $watcherName = $watcher->getName();
 
-        if (!empty($this->actions[$actionName])) {
-            throw new ActionAlreadyRegisteredException(
-                JsonResponse::HTTP_CONFLICT,
-                'Action `' . $actionName . '` already registered for event `' . $this->type . '`'
+        if (!empty($this->watchers[$watcherName])) {
+            throw new AlreadyRegisteredException(
+                'Watcher `' . $watcherName . '` already registered for event `' . $this->type . '`'
             );
         }
 
-        $this->actions[$actionName] = $action;
+        $this->watchers[$watcherName] = $watcher;
     }
 
     /**
-     * @param string $actionName
+     * @param string $watcherName
      */
-    public function removeAction($actionName)
+    public function removeWatcher($watcherName)
     {
-        $this->getAction($actionName);
+        $this->getWatcher($watcherName);
 
-        unset($this->actions[$actionName]);
+        unset($this->watchers[$watcherName]);
     }
 
     /**
-     * @param string $actionName
-     * @return Action
-     * @throws NotRegisteredActionException
+     * @param $watcherName
+     * @return Watcher
+     * @throws NotRegisteredException
      */
-    public function getAction($actionName)
+    public function getWatcher($watcherName)
     {
-        if (empty($this->actions[$actionName])) {
-            throw new NotRegisteredActionException(
-                JsonResponse::HTTP_NOT_FOUND,
-                'Action `' . $actionName . '` is not registered for event type `' . $this->type . '`'
+        if (empty($this->watchers[$watcherName])) {
+            throw new NotRegisteredException(
+                'Watcher `' . $watcherName . '` is not registered for event type `' . $this->type . '`'
             );
         }
 
-        return $this->actions[$actionName];
+        return $this->watchers[$watcherName];
     }
 
     /**
-     * @return Action[]
+     * @return Watcher[]
      */
-    public function getActions()
+    public function getWatchers()
     {
-        return $this->actions;
+        return $this->watchers;
     }
 
     /**
@@ -200,11 +193,11 @@ class Event
             ];
         }
 
-        $actions = [];
-        foreach ($this->actions as $action) {
-            $actions[] = [
-                '_id' => $action->getId(),
-                'name' => $action->getName()
+        $watchers = [];
+        foreach ($this->watchers as $watcher) {
+            $watchers[] = [
+                '_id' => $watcher->getId(),
+                'name' => $watcher->getName()
             ];
         }
 
@@ -212,30 +205,7 @@ class Event
             '_id' => $this->getId(),
             'type' => $this->getType(),
             'collectors' => $collectors,
-            'actions' => $actions
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function dump()
-    {
-        $collectors = [];
-        foreach ($this->collectors as $collector) {
-            $collectors[] = $collector->toArray();
-        }
-
-        $actions = [];
-        foreach ($this->actions as $action) {
-            $actions[] = $action->toArray();
-        }
-
-        return [
-            '_id' => $this->getId(),
-            'type' => $this->getType(),
-            'collectors' => $collectors,
-            'actions' => $actions
+            'watchers' => $watchers
         ];
     }
 
@@ -253,5 +223,28 @@ class Event
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * @return array
+     */
+    public function dump()
+    {
+        $collectors = [];
+        foreach ($this->collectors as $collector) {
+            $collectors[] = $collector->toArray();
+        }
+
+        $watchers = [];
+        foreach ($this->watchers as $watcher) {
+            $watchers[] = $watcher->toArray();
+        }
+
+        return [
+            '_id' => $this->getId(),
+            'type' => $this->getType(),
+            'collectors' => $collectors,
+            'watchers' => $watchers
+        ];
     }
 }

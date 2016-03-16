@@ -34,10 +34,22 @@ class RequestPayload
     }
 
     /**
-     * @param string $key
-     * @return array|string|int|float|bool|null
+     * @param string $payload
+     * @return bool
      */
-    public function getValue($key)
+    public static function isJsonPayload($payload)
+    {
+        $decodedPayload = json_decode($payload);
+
+        return ($decodedPayload !== null && JSON_ERROR_NONE === json_last_error());
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getValue($key, $default = null)
     {
         $value = $this->payload;
 
@@ -46,6 +58,8 @@ class RequestPayload
             if (isset($value[$keyPart])) {
                 $value = $value[$keyPart];
                 continue;
+            } else {
+                $value = $default;
             }
         }
 

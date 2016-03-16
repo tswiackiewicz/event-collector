@@ -6,10 +6,13 @@ use FastRoute\Dispatcher\GroupCountBased as FastRouteGroupCountBasedDispatcher;
 use FastRoute\RouteCollector as FastRouteCollector;
 use FastRoute\RouteParser\Std as FastRouteStdRouteParser;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Dispatcher;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
+use TSwiackiewicz\EventsCollector\Tests\FakeController;
+use TSwiackiewicz\EventsCollector\Tests\FakeControllerFactory;
 
 /**
  * Class DispatcherTest
@@ -39,7 +42,10 @@ class DispatcherTest extends BaseTestCase
             new FastRouteGroupCountBasedDispatcher(
                 $routes->getRoutes()
             ),
-            new Configuration()
+            new FakeControllerFactory(
+                new InMemorySettings(),
+                new InMemoryCounters()
+            )
         );
     }
 
@@ -64,14 +70,14 @@ class DispatcherTest extends BaseTestCase
             [FakeController::class, 'invalidCallback']
         );
         $routes->addRoute(
-            'DELETE',
-            '/error/',
-            [FakeController::class, 'throwableCallback']
-        );
-        $routes->addRoute(
             'GET',
             '/invalid_controller/',
             ['throwableCallback']
+        );
+        $routes->addRoute(
+            'POST',
+            '/invalid_json_payload/',
+            [FakeController::class, 'successfulCallback']
         );
 
         return new RoutesCollection($routes);
@@ -85,7 +91,7 @@ class DispatcherTest extends BaseTestCase
         $dispatcher = $this->createDispatcher();
         $response = $dispatcher->dispatch('PUT', '/invalid_callback_response/', '');
 
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -98,17 +104,6 @@ class DispatcherTest extends BaseTestCase
         $decodedResponse = json_decode($content, true);
 
         $this->assertEquals($statusCode, $decodedResponse['status_code']);
-    }
-
-    /**
-     * @test
-     */
-    public function shouldDispatchWithExceptionRaised()
-    {
-        $dispatcher = $this->createDispatcher();
-        $response = $dispatcher->dispatch('DELETE', '/error/', '');
-
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
     }
 
     /**
@@ -141,6 +136,18 @@ class DispatcherTest extends BaseTestCase
         $dispatcher = $this->createDispatcher();
         $response = $dispatcher->dispatch('GET', '/invalid_controller/', '');
 
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldDispatchRequestWithInvalidPayload()
+    {
+        $dispatcher = $this->createDispatcher();
+        $response = $dispatcher->dispatch('POST', '/invalid_json_payload/',
+            'payload=invalid_json_payload&error_expected=true');
+
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 }

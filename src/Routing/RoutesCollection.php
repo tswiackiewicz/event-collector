@@ -4,12 +4,12 @@ namespace TSwiackiewicz\EventsCollector\Routing;
 use FastRoute\DataGenerator\GroupCountBased as FastRouteDataGenerator;
 use FastRoute\RouteCollector as FastRouteCollector;
 use FastRoute\RouteParser\Std as FastRouteStdRouteParser;
-use TSwiackiewicz\EventsCollector\Action\Action;
-use TSwiackiewicz\EventsCollector\Action\ActionController;
-use TSwiackiewicz\EventsCollector\Collector\Collector;
-use TSwiackiewicz\EventsCollector\Collector\CollectorController;
+use TSwiackiewicz\EventsCollector\Event\Collector\Collector;
+use TSwiackiewicz\EventsCollector\Event\Collector\CollectorController;
 use TSwiackiewicz\EventsCollector\Event\Event;
 use TSwiackiewicz\EventsCollector\Event\EventController;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Watcher;
+use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherController;
 
 /**
  * Class RoutesCollection
@@ -48,67 +48,71 @@ class RoutesCollection
         $this->routes->addRoute(
             'GET',
             '/event/',
-            [EventController::class, 'getAllEventTypes']
+            [EventController::class, 'getEvents']
         );
         $this->routes->addRoute(
             'GET',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}',
-            [EventController::class, 'getEventType']
-        );
-        $this->routes->addRoute(
-            'DELETE',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}',
-            [EventController::class, 'unregisterEventType']
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}',
+            [EventController::class, 'getEvent']
         );
         $this->routes->addRoute(
             'POST',
             '/event/',
-            [EventController::class, 'registerEventType']
+            [EventController::class, 'registerEvent']
+        );
+        $this->routes->addRoute(
+            'DELETE',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}',
+            [EventController::class, 'unregisterEvent']
         );
 
         $this->routes->addRoute(
             'GET',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/collector/',
-            [CollectorController::class, 'getAllEventCollectors']
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/collector/',
+            [CollectorController::class, 'getEventCollectors']
         );
         $this->routes->addRoute(
             'GET',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/collector/{collector:' . Collector::VALID_COLLECTOR_NAME_PATTERN. '}',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/collector/{collector:' . Collector::COLLECTOR_NAME_PATTERN . '}',
             [CollectorController::class, 'getEventCollector']
         );
         $this->routes->addRoute(
-            'DELETE',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/collector/{collector:' . Collector::VALID_COLLECTOR_NAME_PATTERN. '}',
-            [CollectorController::class, 'unregisterEventCollector']
-        );
-        $this->routes->addRoute(
             'POST',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/collector/',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/collector/',
             [CollectorController::class, 'registerEventCollector']
         );
+        $this->routes->addRoute(
+            'DELETE',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/collector/{collector:' . Collector::COLLECTOR_NAME_PATTERN . '}',
+            [CollectorController::class, 'unregisterEventCollector']
+        );
 
         $this->routes->addRoute(
             'GET',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/action/',
-            [ActionController::class, 'getAllEventActions']
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/watcher/',
+            [WatcherController::class, 'getEventWatchers']
         );
         $this->routes->addRoute(
             'GET',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/action/{action:' . Action::VALID_ACTION_NAME_PATTERN. '}',
-            [ActionController::class, 'getEventAction']
-        );
-        $this->routes->addRoute(
-            'DELETE',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/action/{action:' . Action::VALID_ACTION_NAME_PATTERN. '}',
-            [ActionController::class, 'unregisterEventAction']
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/watcher/{watcher:' . Watcher::WATCHER_NAME_PATTERN . '}',
+            [WatcherController::class, 'getEventWatcher']
         );
         $this->routes->addRoute(
             'POST',
-            '/event/{event:' . Event::VALID_EVENT_TYPE_PATTERN . '}/action/',
-            [ActionController::class, 'registerEventAction']
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/watcher/',
+            [WatcherController::class, 'registerEventWatcher']
+        );
+        $this->routes->addRoute(
+            'DELETE',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/watcher/{watcher:' . Watcher::WATCHER_NAME_PATTERN . '}',
+            [WatcherController::class, 'unregisterEventWatcher']
         );
 
-        //$this->routes->addRoute('POST', '/event/{event_type}/', [EventController::class, 'collectEvent']);
+        $this->routes->addRoute(
+            'POST',
+            '/event/{event:' . Event::EVENT_TYPE_PATTERN . '}/',
+            [EventController::class, 'collectEvent']
+        );
     }
 
     /**

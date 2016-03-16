@@ -1,9 +1,11 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Tests\Integration;
 
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use TSwiackiewicz\EventsCollector\ControllerFactory;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Routing\RoutesCollection;
 use TSwiackiewicz\EventsCollector\Server;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
 /**
@@ -20,7 +22,12 @@ class ServerTest extends BaseTestCase
         $routes = RoutesCollection::create();
         $routes->registerDefaultRoutes();
 
-        $server = Server::create($routes, new Configuration());
+        $factory = new ControllerFactory(
+            new InMemorySettings(),
+            new InMemoryCounters()
+        );
+
+        $server = Server::create($routes, $factory);
 
         $this->assertInstanceOf(Server::class, $server);
     }

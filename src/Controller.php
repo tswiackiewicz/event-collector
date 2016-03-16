@@ -1,24 +1,21 @@
 <?php
 namespace TSwiackiewicz\EventsCollector;
 
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 
 /**
- * Class Controller
+ * Interface Controller
  * @package TSwiackiewicz\EventsCollector
  */
-abstract class Controller
+interface Controller
 {
     /**
-     * @var Configuration
+     * @param string $method
+     * @param Request $request
+     * @return JsonResponse
+     * @throws InvalidControllerDefinitionException
      */
-    protected $configuration;
-
-    /**
-     * @param Configuration $configuration
-     */
-    public function __construct(Configuration $configuration)
-    {
-        $this->configuration = $configuration;
-    }
+    public function invoke($method, Request $request);
 }

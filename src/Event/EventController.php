@@ -4,27 +4,96 @@ namespace TSwiackiewicz\EventsCollector\Event;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use TSwiackiewicz\EventsCollector\Controller;
+use TSwiackiewicz\EventsCollector\Counters\Counters;
+use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
+use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
+use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
+use TSwiackiewicz\EventsCollector\Settings\Settings;
 
-class EventController extends Controller
+/**
+ * Class EventController
+ * @package TSwiackiewicz\EventsCollector\Event
+ */
+class EventController implements Controller
 {
+    /**
+     * @var EventService
+     */
+    private $service;
+
+    /**
+     * @param EventService $service
+     */
+    public function __construct(EventService $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
+     * @param Settings $settings
+     * @param Counters $counters
+     * @return EventController
+     */
+    public static function create(Settings $settings, Counters $counters)
+    {
+        return new static(
+            EventService::create($settings, $counters)
+        );
+    }
+
+    /**
+     * @param string $method
+     * @param Request $request
+     * @return JsonResponse
+     * @throws InvalidControllerDefinitionException
+     */
+    public function invoke($method, Request $request)
+    {
+        switch ($method) {
+            case 'getEvents':
+                return $this->getEvents();
+
+            case 'getEvent':
+                return $this->getEvent($request);
+
+            case 'registerEvent':
+                return $this->registerEvent($request);
+
+            case 'unregisterEvent':
+                return $this->unregisterEvent($request);
+
+            case 'collectEvent':
+                return $this->collectEvent($request);
+        }
+
+        throw new InvalidControllerDefinitionException('Method `' . $method . '` is not supported by ' . __CLASS__);
+    }
+
     /**
      * @return JsonResponse
      */
-    public function getAllEventTypes()
+    private function getEvents()
     {
-        $eventTypes = [];
+        try {
 
-        $allEventTypes = $this->configuration->getAllEventTypes();
-        foreach ($allEventTypes as $eventType) {
-            $eventTypes[] = [
-                '_id' => $eventType->getId(),
-                'type' => $eventType->getType()
-            ];
+            $allEvents = $this->service->getEvents();
+
+            $events = [];
+            foreach ($allEvents as $event) {
+                $events[] = [
+                    '_id' => $event->getId(),
+                    'type' => $event->getType()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
 
         return new JsonResponse(
-            $eventTypes,
+            $events,
             JsonResponse::HTTP_OK
         );
     }
@@ -33,14 +102,20 @@ class EventController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEventType(Request $request)
+    private function getEvent(Request $request)
     {
-        $eventType = $this->configuration->getEventType(
-            $request->query->get('event')
-        );
+        try {
+
+            $event = $this->service->getEvent($request->query->get('event'));
+
+        } catch (NotRegisteredException $notRegistered) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
+        } catch (\Exception $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
+        }
 
         return new JsonResponse(
-            $eventType->toArray(),
+            $event->toArray(),
             JsonResponse::HTTP_OK
         );
     }
@@ -49,11 +124,44 @@ class EventController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function unregisterEventType(Request $request)
+    private function registerEvent(Request $request)
     {
-        $this->configuration->unregisterEventType(
-            $request->request->get('event')
+        try {
+
+            $payload = RequestPayload::fromJson($request->getContent());
+            $event = Event::create($payload->getValue('type'));
+
+            $this->service->registerEvent($event);
+
+        } catch (AlreadyRegisteredException $registered) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $registered->getMessage());
+        } catch (\Exception $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
+        }
+
+        return new JsonResponse(
+            [
+                '_id' => $event->getId()
+            ],
+            JsonResponse::HTTP_CREATED
         );
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    private function unregisterEvent(Request $request)
+    {
+        try {
+
+            $this->service->unregisterEvent($request->request->get('event'));
+
+        } catch (NotRegisteredException $notRegistered) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
+        } catch (\Exception $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
+        }
 
         return new JsonResponse(
             [
@@ -67,31 +175,30 @@ class EventController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function registerEventType(Request $request)
+    private function collectEvent(Request $request)
     {
-        $payload = RequestPayload::fromJson($request->getContent());
-        $eventType = Event::create(
-            $payload->getValue('type')
-        );
+        try {
 
-        $this->configuration->registerEventType($eventType);
+            $event = $this->service->getEvent($request->request->get('event'));
+            $collectedEvent = Event::create(
+                $event->getType(),
+                $event->getCollectors(),
+                $event->getWatchers()
+            );
+
+            $this->service->collectEvent($collectedEvent, $request->getContent());
+
+        } catch (NotRegisteredException $notRegistered) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
+        } catch (\Exception $e) {
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
+        }
 
         return new JsonResponse(
             [
-                '_id' => $eventType->getId()
+                '_id' => $collectedEvent->getId()
             ],
-            JsonResponse::HTTP_CREATED
+            JsonResponse::HTTP_OK
         );
     }
-
-    /**
-     * @codeCoverageIgnore
-     * @param Request $request
-     */
-    public function collectEvent(Request $request)
-    {
-        $eventType = $request->request->get('event');
-        $payload = RequestPayload::fromJson($request->getContent());
-    }
-
 }

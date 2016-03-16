@@ -2,112 +2,79 @@
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use TSwiackiewicz\EventsCollector\Configuration\Configuration;
-use TSwiackiewicz\EventsCollector\Event\Event;
+use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Event\EventController;
-use TSwiackiewicz\EventsCollector\Event\Exception\EventTypeAlreadyRegisteredException;
-use TSwiackiewicz\EventsCollector\Event\Exception\NotRegisteredEventTypeException;
-use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
+use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 
-class EventControllerTest extends BaseTestCase
+/**
+ * Class EventControllerTest
+ * @package TSwiackiewicz\EventsCollector\Tests\Unit\Event
+ */
+class EventControllerTest extends ControllerBaseTestCase
 {
     /**
-     * @var string
+     * @test
      */
-    private $event = 'event_type';
+    public function shouldCreateEventController()
+    {
+        $controller = EventController::create(
+            new InMemorySettings(),
+            new InMemoryCounters()
+        );
 
-    /**
-     * @var string
-     */
-    private $payload = '{"type":"test_event"}';
+        $this->assertInstanceOf(EventController::class, $controller);
+    }
 
     /**
      * @test
      */
-    public function shouldReturnAllEventTypesAsJsonResponse()
+    public function shouldReturnAllRegisteredEventsAsJsonResponse()
     {
         $request = $this->createRequest();
 
         $controller = $this->createEventController();
-        $controller->registerEventType($request);
+        $controller->invoke('registerEvent', $request);
 
-        $response = $controller->getAllEventTypes();
+        $response = $controller->invoke('getEvents', $request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
-    }
-
-    /**
-     * @return Request
-     */
-    private function createRequest()
-    {
-        return new Request(
-            [
-                'event' => $this->event
-            ],
-            [
-                'event' => $this->event
-            ],
-            [],
-            [],
-            [],
-            [],
-            $this->payload
-        );
-    }
-
-    /**
-     * @return EventController
-     */
-    private function createEventController()
-    {
-        $configuration = new Configuration();
-        $configuration->registerEventType(
-            Event::create($this->event)
-        );
-
-        return new EventController(
-            $configuration
-        );
+        $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
 
     /**
      * @test
      */
-    public function shouldReturnEventAsJsonResponse()
+    public function shouldReturnEvent()
     {
         $request = $this->createRequest();
 
         $controller = $this->createEventController();
-        $response = $controller->getEventType($request);
+        $response = $controller->invoke('getEvent', $request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+        $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
 
     /**
      * @test
      */
-    public function shouldThrowNotRegisteredEventTypeExceptionWhenReturnNotRegisteredEvent()
+    public function shouldReturnHttpNotFoundResponseWhenReturnNotRegisteredEvent()
     {
-        $this->setExpectedException(NotRegisteredEventTypeException::class);
-
         $controller = $this->createEventControllerWithoutEventRegistered();
-        $controller->getEventType(
-            $this->createRequest()
-        );
+        $response = $controller->invoke('getEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
 
     /**
-     * @return EventController
+     * @test
      */
-    private function createEventControllerWithoutEventRegistered()
+    public function shouldReturnBadRequestResponseWhenReturningEventWithInvalidEventType()
     {
-        return new EventController(
-            new Configuration()
-        );
+        $controller = $this->createEventController();
+        $response = $controller->invoke('getEvent', $this->createRequestWithInvalidEventType([], '{"type": []}'));
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -118,23 +85,32 @@ class EventControllerTest extends BaseTestCase
         $request = $this->createRequest();
 
         $controller = $this->createEventController();
-        $response = $controller->unregisterEventType($request);
+        $response = $controller->invoke('unregisterEvent', $request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+        $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
 
     /**
      * @test
      */
-    public function shouldThrowNotRegisteredEventTypeExceptionWhenUnregisterNotRegisteredEvent()
+    public function shouldReturnHttpNotFoundResponseWhenUnregisterNotRegisteredEvent()
     {
-        $this->setExpectedException(NotRegisteredEventTypeException::class);
-
         $controller = $this->createEventControllerWithoutEventRegistered();
-        $controller->unregisterEventType(
-            $this->createRequest()
-        );
+        $response = $controller->invoke('unregisterEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnBadRequestResponseWhenUnregisterEventWithInvalidEventType()
+    {
+        $controller = $this->createEventController();
+        $response = $controller->invoke('unregisterEvent',
+            $this->createRequestWithInvalidEventType([], '{"type": []}'));
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -143,25 +119,133 @@ class EventControllerTest extends BaseTestCase
     public function shouldRegisterEvent()
     {
         $controller = $this->createEventController();
-        $response = $controller->registerEventType(
-            $this->createRequest()
-        );
+        $response = $controller->invoke('registerEvent', $this->createRequest());
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
+        $this->assertResponse($response, JsonResponse::HTTP_CREATED);
     }
 
     /**
      * @test
      */
-    public function shouldThrowEventTypeAlreadyRegisteredExceptionWhenRegisterAlreadyRegisteredAction()
+    public function shouldReturnConflictResponseWhenRegisterAlreadyRegisteredEvent()
     {
-        $this->setExpectedException(EventTypeAlreadyRegisteredException::class);
+        $request = $this->createRequest();
+
+        $controller = $this->createEventController();
+        $controller->invoke('registerEvent', $request);
+
+        $response = $controller->invoke('registerEvent', $request);
+
+        $this->assertResponse($response, JsonResponse::HTTP_CONFLICT);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnBadRequestResponseWhenRegisterEventWithInvalidEventType()
+    {
+        $controller = $this->createEventController();
+        $response = $controller->invoke('registerEvent', $this->createRequestWithInvalidEventType([], '{"type": []}'));
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldCollectEvent()
+    {
+        $controller = $this->createEventControllerWithRegisteredCollector();
+        $response = $controller->invoke('collectEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldCollectEventWithActionHandled()
+    {
+        $counterKey = implode(
+            FieldsBasedWatchedEventAggregator::KEY_PARTS_SEPARATOR,
+            [
+                $this->event,
+                'field1',
+                'field2'
+            ]
+        );
+        $counters = [
+            $counterKey => 100
+        ];
+
+        $controller = $this->createEventControllerWithRegisteredCollector($counters);
+        $response = $controller->invoke('collectEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpNotFoundResponseWhenCollectingNotRegisteredEvent()
+    {
+        $controller = $this->createEventControllerWithoutEventRegistered();
+        $response = $controller->invoke('collectEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpNotFoundResponseWhenNoCollectorsRegisteredForEvent()
+    {
+        $controller = $this->createEventController();
+        $response = $controller->invoke('collectEvent', $this->createRequest());
+
+        $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpBadRequestResponseWhenCollectingEventWithInvalidType()
+    {
+        $controller = $this->createEventControllerWithRegisteredCollector();
+        $response = $controller->invoke('collectEvent', $this->createRequestWithInvalidEventType([], '{"type": []}'));
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnHttpBadRequestResponseWhenCollectingEventWithEmptyPayload()
+    {
+        $controller = $this->createEventControllerWithRegisteredCollector();
+        $response = $controller->invoke('collectEvent', $this->createRequestWithEmptyPayload());
+
+        $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidControllerDefinitionExceptionWhenInvokedMethodIsNotDefined()
+    {
+        $this->setExpectedException(InvalidControllerDefinitionException::class);
 
         $request = $this->createRequest();
 
         $controller = $this->createEventController();
-        $controller->registerEventType($request);
-        $controller->registerEventType($request);
+        $controller->invoke('notDefinedMethod', $request);
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildPayload()
+    {
+        return '{"type":"test_event"}';
     }
 }
