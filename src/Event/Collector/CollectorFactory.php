@@ -1,6 +1,8 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Collector;
 
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorAppender;
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorNullAppender;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
@@ -30,13 +32,20 @@ class CollectorFactory
         }
 
         switch ($appenderType) {
-            case CollectorSyslogAppender::SYSLOG_APPENDER:
+            case CollectorAppender::SYSLOG_APPENDER:
                 return Collector::create(
                     $payload->getValue('name'),
                     $eventType,
                     CollectorSyslogAppender::create(
                         $payload->getValue('appender')
                     )
+                );
+
+            case CollectorAppender::NULL_APPENDER:
+                return Collector::create(
+                    $payload->getValue('name'),
+                    $eventType,
+                    CollectorNullAppender::create()
                 );
         }
 
@@ -62,7 +71,7 @@ class CollectorFactory
         }
 
         switch ($appenderType) {
-            case CollectorSyslogAppender::SYSLOG_APPENDER:
+            case CollectorAppender::SYSLOG_APPENDER:
                 return new Collector(
                     new Uuid($payload->getValue('_id')),
                     $payload->getValue('name'),
@@ -70,6 +79,14 @@ class CollectorFactory
                     CollectorSyslogAppender::create(
                         $payload->getValue('appender')
                     )
+                );
+
+            case CollectorAppender::NULL_APPENDER:
+                return new Collector(
+                    new Uuid($payload->getValue('_id')),
+                    $payload->getValue('name'),
+                    $eventType,
+                    CollectorNullAppender::create()
                 );
         }
 

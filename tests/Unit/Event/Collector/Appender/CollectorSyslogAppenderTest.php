@@ -1,6 +1,7 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Collector\Appender;
 
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorAppender;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
@@ -40,9 +41,16 @@ class CollectorSyslogAppenderTest extends BaseTestCase
      */
     private function assertCollectorAppender(CollectorSyslogAppender $appender)
     {
-        $this->assertEquals(CollectorSyslogAppender::SYSLOG_APPENDER, $appender->getType());
+        $this->assertEquals(CollectorAppender::SYSLOG_APPENDER, $appender->getType());
         $this->assertEquals($this->parameters, $appender->getParameters());
         $this->assertEquals($this->ident, $appender->getParameter(CollectorSyslogAppender::IDENT_PARAMETER));
+        $this->assertEquals(
+            [
+                'type' => CollectorAppender::SYSLOG_APPENDER,
+                'ident' => $this->ident
+            ],
+            $appender->toArray()
+        );
     }
 
     /**

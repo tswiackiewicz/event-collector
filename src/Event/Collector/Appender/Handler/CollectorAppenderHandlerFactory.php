@@ -5,6 +5,7 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\SyslogHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorAppender;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
@@ -30,6 +31,11 @@ class CollectorAppenderHandlerFactory
                 );
 
                 return new CollectorAppenderHandler($logger);
+
+            case CollectorAppender::NULL_APPENDER:
+                return new CollectorAppenderHandler(
+                    new NullLogger()
+                );
         }
 
         throw new UnknownTypeException('Unknown collector appender type: `' . $appenderType . '``');

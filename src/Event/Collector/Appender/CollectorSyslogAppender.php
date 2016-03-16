@@ -33,7 +33,7 @@ class CollectorSyslogAppender extends CollectorAppender
     }
 
     /**
-     * @throws InvalidParameterException
+     * {@inheritdoc}
      */
     protected function validateParameters()
     {

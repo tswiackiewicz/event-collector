@@ -15,7 +15,7 @@ class CollectorService
     /**
      * @var Settings
      */
-    private $repository;
+    private $settings;
 
     /**
      * @var CollectorAppenderHandlerFactory
@@ -23,12 +23,12 @@ class CollectorService
     private $factory;
 
     /**
-     * @param Settings $repository
+     * @param Settings $settings
      * @param CollectorAppenderHandlerFactory $factory
      */
-    public function __construct(Settings $repository, CollectorAppenderHandlerFactory $factory)
+    public function __construct(Settings $settings, CollectorAppenderHandlerFactory $factory)
     {
-        $this->repository = $repository;
+        $this->settings = $settings;
         $this->factory = $factory;
     }
 
@@ -50,7 +50,7 @@ class CollectorService
      */
     public function getEventCollectors($eventType)
     {
-        return $this->repository->getEventCollectors($eventType);
+        return $this->settings->getEventCollectors($eventType);
     }
 
     /**
@@ -60,7 +60,7 @@ class CollectorService
      */
     public function getEventCollector($eventType, $collectorName)
     {
-        return $this->repository->getEventCollector($eventType, $collectorName);
+        return $this->settings->getEventCollector($eventType, $collectorName);
     }
 
     /**
@@ -68,7 +68,7 @@ class CollectorService
      */
     public function registerEventCollector(Collector $collector)
     {
-        $this->repository->registerEventCollector($collector);
+        $this->settings->registerEventCollector($collector);
     }
 
     /**
@@ -77,7 +77,7 @@ class CollectorService
      */
     public function unregisterEventCollector($eventType, $collectorName)
     {
-        $this->repository->unregisterEventCollector($eventType, $collectorName);
+        $this->settings->unregisterEventCollector($eventType, $collectorName);
     }
 
     /**

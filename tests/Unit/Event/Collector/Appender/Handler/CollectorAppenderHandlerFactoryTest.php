@@ -2,6 +2,7 @@
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Collector\Appender\Handler;
 
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorAppender;
+use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorNullAppender;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\CollectorSyslogAppender;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandler;
 use TSwiackiewicz\EventsCollector\Event\Collector\Appender\Handler\CollectorAppenderHandlerFactory;
@@ -17,9 +18,22 @@ class CollectorAppenderHandlerFactoryTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateCollectorAppenderHandlerFromGivenCollectorAppender()
+    public function shouldCreateCollectorAppenderHandlerFromGivenCollectorSyslogAppender()
     {
         $appender = CollectorSyslogAppender::create(['ident' => 'test']);
+
+        $factory = new CollectorAppenderHandlerFactory();
+        $handler = $factory->createFromCollectorAppender($appender);
+
+        $this->assertInstanceOf(CollectorAppenderHandler::class, $handler);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldCreateCollectorAppenderHandlerFromGivenCollectorNullAppender()
+    {
+        $appender = CollectorNullAppender::create();
 
         $factory = new CollectorAppenderHandlerFactory();
         $handler = $factory->createFromCollectorAppender($appender);

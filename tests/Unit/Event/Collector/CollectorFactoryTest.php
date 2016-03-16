@@ -16,12 +16,26 @@ class CollectorFactoryTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateCollector()
+    public function shouldCreateCollectorWithSyslogAppender()
     {
         $factory = $this->createCollectorFactory();
         $collector = $factory->create(
             'test_event',
             '{"name":"test_collector","appender":{"type":"syslog","ident":"test"}}'
+        );
+
+        $this->assertInstanceOf(Collector::class, $collector);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldCreateCollectorWithNullAppender()
+    {
+        $factory = $this->createCollectorFactory();
+        $collector = $factory->create(
+            'test_event',
+            '{"name":"test_collector","appender":{"type":"null"}}'
         );
 
         $this->assertInstanceOf(Collector::class, $collector);
@@ -60,7 +74,7 @@ class CollectorFactoryTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateCollectorFromArray()
+    public function shouldCreateCollectorWithSyslogAppenderFromArray()
     {
         $factory = $this->createCollectorFactory();
         $collector = $factory->createFromArray(
@@ -71,6 +85,26 @@ class CollectorFactoryTest extends BaseTestCase
                 'appender' => [
                     'type' => 'syslog',
                     'ident' => 'test'
+                ]
+            ]
+        );
+
+        $this->assertInstanceOf(Collector::class, $collector);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldCreateCollectorWithNullAppenderFromArray()
+    {
+        $factory = $this->createCollectorFactory();
+        $collector = $factory->createFromArray(
+            'test_event',
+            [
+                '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
+                'name' => 'test_collector',
+                'appender' => [
+                    'type' => 'null'
                 ]
             ]
         );

@@ -11,6 +11,7 @@ use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 abstract class CollectorAppender
 {
     const SYSLOG_APPENDER = 'syslog';
+    const NULL_APPENDER = 'null';
 
     /**
      * @var string
