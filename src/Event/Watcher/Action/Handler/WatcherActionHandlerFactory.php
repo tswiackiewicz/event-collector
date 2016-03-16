@@ -26,6 +26,9 @@ class WatcherActionHandlerFactory
                     $action->getParameter(WatcherEmailAction::TO_ADDRESS_PARAMETER),
                     $action->getParameter(WatcherEmailAction::SUBJECT_PARAMETER)
                 );
+
+            case WatcherAction::NULL_ACTION:
+                return new WatcherNullActionHandler();
         }
 
         throw new UnknownTypeException('Unknown watcher action type');

@@ -1,8 +1,10 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherAction;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
-use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\FieldsBasedWatchedEventAggregator;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherNullAction;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Aggregator\WatchedEventAggregatorFactory;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 use TSwiackiewicz\EventsCollector\Http\RequestPayload;
@@ -35,18 +37,24 @@ class WatcherFactory
             throw new InvalidParameterException('Watcher aggregator.type is required');
         }
 
+        $factory = new WatchedEventAggregatorFactory();
         switch ($actionType) {
-            case WatcherEmailAction::EMAIL_ACTION:
+            case WatcherAction::EMAIL_ACTION:
                 return Watcher::create(
                     $payload->getValue('name', ''),
                     $eventType,
                     $payload->getValue('threshold', 0),
-                    new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator.fields', [])
-                    ),
-                    WatcherEmailAction::create(
-                        $payload->getValue('action')
-                    )
+                    $factory->create($payload->getValue('aggregator', [])),
+                    WatcherEmailAction::create($payload->getValue('action'))
+                );
+
+            case WatcherAction::NULL_ACTION:
+                return Watcher::create(
+                    $payload->getValue('name', ''),
+                    $eventType,
+                    $payload->getValue('threshold', 0),
+                    $factory->create($payload->getValue('aggregator', [])),
+                    WatcherNullAction::create()
                 );
         }
 
@@ -74,19 +82,26 @@ class WatcherFactory
             throw new InvalidParameterException('Watcher aggregator.type is required');
         }
 
+        $factory = new WatchedEventAggregatorFactory();
         switch ($actionType) {
-            case WatcherEmailAction::EMAIL_ACTION:
+            case WatcherAction::EMAIL_ACTION:
                 return new Watcher(
                     new Uuid($payload->getValue('_id')),
                     $payload->getValue('name', ''),
                     $eventType,
                     $payload->getValue('threshold', 0),
-                    new FieldsBasedWatchedEventAggregator(
-                        $payload->getValue('aggregator.fields', [])
-                    ),
-                    WatcherEmailAction::create(
-                        $payload->getValue('action')
-                    )
+                    $factory->create($payload->getValue('aggregator', [])),
+                    WatcherEmailAction::create($payload->getValue('action'))
+                );
+
+            case WatcherAction::NULL_ACTION:
+                return new Watcher(
+                    new Uuid($payload->getValue('_id')),
+                    $payload->getValue('name', ''),
+                    $eventType,
+                    $payload->getValue('threshold', 0),
+                    $factory->create($payload->getValue('aggregator', [])),
+                    WatcherNullAction::create()
                 );
         }
 

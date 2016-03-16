@@ -15,13 +15,17 @@ class WatcherFactoryTest extends BaseTestCase
 {
     /**
      * @test
+     * @dataProvider getWatcherConfigurationParameters
+     *
+     * @param string $aggregatorConfiguration
+     * @param string $actionConfiguration
      */
-    public function shouldCreateWatcher()
+    public function shouldCreateWatcher($aggregatorConfiguration, $actionConfiguration)
     {
         $factory = $this->createWatcherFactory();
         $watcher = $factory->create(
             'test_event',
-            '{"name":"test_action","threshold":100,"aggregator":{"type":"fields","fields":["field1","field2"]},"action":{"type":"email","to":"user@domain.com","subject":"Test subject"}}'
+            '{"name":"test_action","threshold":100,"aggregator":' . $aggregatorConfiguration . ',"action":' . $actionConfiguration . '}'
         );
 
         $this->assertInstanceOf(Watcher::class, $watcher);
@@ -43,7 +47,18 @@ class WatcherFactoryTest extends BaseTestCase
         $this->setExpectedException(InvalidParameterException::class);
 
         $factory = $this->createWatcherFactory();
-        $factory->create('test_event', '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":[]}');
+        $factory->create('test_event', '{"aggregator":{"type":"single"},"action":[]}');
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidParameterExceptionWhenWatcherAggregatorTypeIsNotDefined()
+    {
+        $this->setExpectedException(InvalidParameterException::class);
+
+        $factory = $this->createWatcherFactory();
+        $factory->create('test_event', '{"aggregator":[],"action":{"type": "null"}}');
     }
 
     /**
@@ -55,13 +70,17 @@ class WatcherFactoryTest extends BaseTestCase
 
         $factory = $this->createWatcherFactory();
         $factory->create('test_event',
-            '{"aggregator":{"type":"fields","fields":["field1","field2"]},"action":{"type":"unknown_type"}}');
+            '{"aggregator":{"type":"single"},"action":{"type":"unknown_type"}}');
     }
 
     /**
      * @test
+     * @dataProvider getWatcherConfigurationParameters
+     *
+     * @param string $aggregatorConfiguration
+     * @param string $actionConfiguration
      */
-    public function shouldCreateWatcherFromArray()
+    public function shouldCreateWatcherFromArray($aggregatorConfiguration, $actionConfiguration)
     {
         $factory = $this->createWatcherFactory();
         $watcher = $factory->createFromArray(
@@ -70,18 +89,8 @@ class WatcherFactoryTest extends BaseTestCase
                 '_id' => '3a942a2b-04a0-4d23-9de7-1b433566ef05',
                 'name' => 'test_action',
                 'threshold' => 100,
-                'aggregator' => [
-                    'type' => 'fields',
-                    'fields' => [
-                        'field1',
-                        'field2'
-                    ]
-                ],
-                'action' => [
-                    'type' => 'email',
-                    'to' => 'user@domain.com',
-                    'subject' => 'Test subject'
-                ]
+                'aggregator' => json_decode($aggregatorConfiguration, true),
+                'action' => json_decode($actionConfiguration, true)
             ]
         );
 
@@ -100,13 +109,28 @@ class WatcherFactoryTest extends BaseTestCase
             'test_event',
             [
                 'aggregator' => [
-                    'type' => 'fields',
-                    'fields' => [
-                        'field1',
-                        'field2'
-                    ]
+                    'type' => 'single'
                 ],
                 'action' => []
+            ]
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidParameterExceptionWhenCreatedFromArrayWatcherAggregatorTypeIsNotDefined()
+    {
+        $this->setExpectedException(InvalidParameterException::class);
+
+        $factory = $this->createWatcherFactory();
+        $factory->createFromArray(
+            'test_event',
+            [
+                'aggregator' => [],
+                'action' => [
+                    'type' => 'null'
+                ]
             ]
         );
     }
@@ -123,16 +147,37 @@ class WatcherFactoryTest extends BaseTestCase
             'test_event',
             [
                 'aggregator' => [
-                    'type' => 'fields',
-                    'fields' => [
-                        'field1',
-                        'field2'
-                    ]
+                    'type' => 'single'
                 ],
                 'action' => [
                     'type' => 'unknown_type'
                 ]
             ]
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function getWatcherConfigurationParameters()
+    {
+        return [
+            [
+                '{"type":"fields","fields":["field1","field2"]}',
+                '{"type":"email","to":"user@domain.com","subject":"Test subject"}'
+            ],
+            [
+                '{"type":"single"}',
+                '{"type":"email","to":"user@domain.com","subject":"Test subject"}'
+            ],
+            [
+                '{"type":"fields","fields":["field1","field2"]}',
+                '{"type":"null"}'
+            ],
+            [
+                '{"type":"single"}',
+                '{"type":"null"}'
+            ]
+        ];
     }
 }

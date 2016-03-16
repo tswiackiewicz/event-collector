@@ -5,6 +5,7 @@ use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHand
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\Handler\WatcherActionHandlerFactory;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherAction;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherNullAction;
 use TSwiackiewicz\EventsCollector\Exception\UnknownTypeException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
 
@@ -17,7 +18,7 @@ class WatcherActionHandlerFactoryTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldCreateWatcherActionHandlerFromGivenWatcherAction()
+    public function shouldCreateWatcherActionHandlerFromGivenWatcherEmailAction()
     {
         $action = WatcherEmailAction::create(
             [
@@ -35,11 +36,24 @@ class WatcherActionHandlerFactoryTest extends BaseTestCase
     /**
      * @test
      */
+    public function shouldCreateWatcherActionHandlerFromGivenWatcherNullAction()
+    {
+        $action = WatcherNullAction::create();
+
+        $factory = new WatcherActionHandlerFactory();
+        $handler = $factory->createFromWatcherAction($action);
+
+        $this->assertInstanceOf(WatcherActionHandler::class, $handler);
+    }
+
+    /**
+     * @test
+     */
     public function shouldThrowUnknownTypeExceptionWhenGivenWatcherActionIsUnknownType()
     {
         $this->setExpectedException(UnknownTypeException::class);
 
-        $action = $this->createWatcherEmailActionWithUnknownType();
+        $action = $this->createWatcherActionWithUnknownType();
 
         $factory = new WatcherActionHandlerFactory();
         $factory->createFromWatcherAction($action);
@@ -48,7 +62,7 @@ class WatcherActionHandlerFactoryTest extends BaseTestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|WatcherAction
      */
-    private function createWatcherEmailActionWithUnknownType()
+    private function createWatcherActionWithUnknownType()
     {
         $action = $this->getMockBuilder(WatcherAction::class)
             ->disableOriginalConstructor()

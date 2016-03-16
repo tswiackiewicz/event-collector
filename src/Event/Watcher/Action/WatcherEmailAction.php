@@ -23,7 +23,7 @@ class WatcherEmailAction extends WatcherAction
     }
 
     /**
-     * @return array
+     * {@inheritdoc}
      */
     public function toArray()
     {
@@ -35,7 +35,7 @@ class WatcherEmailAction extends WatcherAction
     }
 
     /**
-     * @throws InvalidParameterException
+     * {@inheritdoc}
      */
     protected function validateParameters()
     {

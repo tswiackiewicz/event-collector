@@ -11,6 +11,7 @@ use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 abstract class WatcherAction
 {
     const EMAIL_ACTION = 'email';
+    const NULL_ACTION = 'null';
 
     /**
      * @var string

@@ -1,6 +1,7 @@
 <?php
 namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Watcher\Action;
 
+use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherAction;
 use TSwiackiewicz\EventsCollector\Event\Watcher\Action\WatcherEmailAction;
 use TSwiackiewicz\EventsCollector\Exception\InvalidParameterException;
 use TSwiackiewicz\EventsCollector\Tests\BaseTestCase;
@@ -42,14 +43,22 @@ class WatcherEmailActionTest extends BaseTestCase
     }
 
     /**
-     * @param WatcherEmailAction $action
+     * @param WatcherAction $action
      */
-    private function assertAction(WatcherEmailAction $action)
+    private function assertAction(WatcherAction $action)
     {
-        $this->assertEquals(WatcherEmailAction::EMAIL_ACTION, $action->getType());
+        $this->assertEquals(WatcherAction::EMAIL_ACTION, $action->getType());
         $this->assertEquals($this->parameters, $action->getParameters());
         $this->assertEquals($this->toAddress, $action->getParameter(WatcherEmailAction::TO_ADDRESS_PARAMETER));
         $this->assertEquals($this->subject, $action->getParameter(WatcherEmailAction::SUBJECT_PARAMETER));
+        $this->assertEquals(
+            [
+                'type' => WatcherAction::EMAIL_ACTION,
+                'to' => $this->toAddress,
+                'subject' => $this->subject
+            ],
+            $action->toArray()
+        );
     }
 
     /**
