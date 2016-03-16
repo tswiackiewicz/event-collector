@@ -3,8 +3,10 @@ namespace TSwiackiewicz\EventsCollector\Event\Watcher;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Controller;
 use TSwiackiewicz\EventsCollector\Counters\Counters;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
 use TSwiackiewicz\EventsCollector\Settings\Settings;
@@ -13,7 +15,7 @@ use TSwiackiewicz\EventsCollector\Settings\Settings;
  * Class WatcherController
  * @package TSwiackiewicz\EventsCollector\Event\Watcher
  */
-class WatcherController
+class WatcherController implements Controller
 {
     /**
      * @var WatcherService
@@ -49,10 +51,35 @@ class WatcherController
     }
 
     /**
+     * @param string $method
+     * @param Request $request
+     * @return JsonResponse
+     * @throws InvalidControllerDefinitionException
+     */
+    public function invoke($method, Request $request)
+    {
+        switch ($method) {
+            case 'getEventWatchers':
+                return $this->getEventWatchers($request);
+
+            case 'getEventWatcher':
+                return $this->getEventWatcher($request);
+
+            case 'registerEventWatcher':
+                return $this->registerEventWatcher($request);
+
+            case 'unregisterEventWatcher':
+                return $this->unregisterEventWatcher($request);
+        }
+
+        throw new InvalidControllerDefinitionException('Method `' . $method . '` is not supported by ' . __CLASS__);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEventWatchers(Request $request)
+    private function getEventWatchers(Request $request)
     {
         try {
 
@@ -83,7 +110,7 @@ class WatcherController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEventWatcher(Request $request)
+    private function getEventWatcher(Request $request)
     {
         try {
 
@@ -108,7 +135,7 @@ class WatcherController
      * @param Request $request
      * @return JsonResponse
      */
-    public function registerEventWatcher(Request $request)
+    private function registerEventWatcher(Request $request)
     {
         try {
 
@@ -139,7 +166,7 @@ class WatcherController
      * @param Request $request
      * @return JsonResponse
      */
-    public function unregisterEventWatcher(Request $request)
+    private function unregisterEventWatcher(Request $request)
     {
         try {
 

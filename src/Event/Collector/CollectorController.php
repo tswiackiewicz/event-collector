@@ -3,7 +3,9 @@ namespace TSwiackiewicz\EventsCollector\Event\Collector;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Controller;
 use TSwiackiewicz\EventsCollector\Exception\AlreadyRegisteredException;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 use TSwiackiewicz\EventsCollector\Exception\NotRegisteredException;
 use TSwiackiewicz\EventsCollector\Http\JsonErrorResponse;
 use TSwiackiewicz\EventsCollector\Settings\Settings;
@@ -12,7 +14,7 @@ use TSwiackiewicz\EventsCollector\Settings\Settings;
  * Class CollectorController
  * @package TSwiackiewicz\EventsCollector\Event\Collector
  */
-class CollectorController
+class CollectorController implements Controller
 {
     /**
      * @var CollectorService
@@ -47,10 +49,36 @@ class CollectorController
     }
 
     /**
+     * @param string $method
+     * @param Request $request
+     * @return JsonResponse
+     * @throws InvalidControllerDefinitionException
+     */
+    public function invoke($method, Request $request)
+    {
+        switch ($method)
+        {
+            case 'getEventCollectors':
+                return $this->getEventCollectors($request);
+
+            case 'getEventCollector':
+                return $this->getEventCollector($request);
+
+            case 'registerEventCollector':
+                return $this->registerEventCollector($request);
+
+            case 'unregisterEventCollector':
+                return $this->unregisterEventCollector($request);
+        }
+
+        throw new InvalidControllerDefinitionException('Method `' . $method . '` is not defined by ' . __CLASS__);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEventCollectors(Request $request)
+    private function getEventCollectors(Request $request)
     {
         try {
 
@@ -81,7 +109,7 @@ class CollectorController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getEventCollector(Request $request)
+    private function getEventCollector(Request $request)
     {
         try {
 
@@ -106,7 +134,7 @@ class CollectorController
      * @param Request $request
      * @return JsonResponse
      */
-    public function registerEventCollector(Request $request)
+    private function registerEventCollector(Request $request)
     {
         try {
 
@@ -137,7 +165,7 @@ class CollectorController
      * @param Request $request
      * @return JsonResponse
      */
-    public function unregisterEventCollector(Request $request)
+    private function unregisterEventCollector(Request $request)
     {
         try {
 

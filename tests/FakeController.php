@@ -2,17 +2,40 @@
 namespace TSwiackiewicz\EventsCollector\Tests;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use TSwiackiewicz\EventsCollector\Controller;
 
 /**
  * Class FakeController
  * @package TSwiackiewicz\EventsCollector\Tests
  */
-class FakeController
+class FakeController implements Controller
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function invoke($method, Request $request)
+    {
+        switch ($method)
+        {
+            case 'successfulCallback':
+                return $this->successfulCallback();
+
+            case 'invalidCallback':
+                return $this->invalidCallback();
+
+            case 'throwableCallback':
+                return $this->throwableCallback();
+        }
+
+        throw new \RuntimeException();
+    }
+
+
     /**
      * @return JsonResponse
      */
-    public function successfulCallback()
+    private function successfulCallback()
     {
         return new JsonResponse(
             [
@@ -25,7 +48,7 @@ class FakeController
     /**
      * @return bool
      */
-    public function invalidCallback()
+    private function invalidCallback()
     {
         return false;
     }
@@ -33,7 +56,7 @@ class FakeController
     /**
      * @throws \RuntimeException
      */
-    public function throwableCallback()
+    private function throwableCallback()
     {
         throw new \RuntimeException('Error occurs');
     }

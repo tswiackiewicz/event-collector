@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-# 0.2.0 - 2016-03-??
+# 0.2.0 - 2016-03-16
 
 * Collect events with registered collector, syslog / null collectors supported
 * Watch events (and perform action) with registered watcher, single / fields based aggregator supported

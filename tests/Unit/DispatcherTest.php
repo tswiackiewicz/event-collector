@@ -91,7 +91,7 @@ class DispatcherTest extends BaseTestCase
         $dispatcher = $this->createDispatcher();
         $response = $dispatcher->dispatch('PUT', '/invalid_callback_response/', '');
 
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -136,7 +136,7 @@ class DispatcherTest extends BaseTestCase
         $dispatcher = $this->createDispatcher();
         $response = $dispatcher->dispatch('GET', '/invalid_controller/', '');
 
-        $this->assertResponseStatusCode($response, JsonResponse::HTTP_CONFLICT);
+        $this->assertResponseStatusCode($response, JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**

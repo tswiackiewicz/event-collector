@@ -74,21 +74,19 @@ class Dispatcher
     }
 
     /**
-     * @param string[] $controller
+     * @param string[] $controllerDefinition
      * @param string $method
      * @param string $uri
      * @param string $query
      * @param string $payload
      * @return JsonResponse
      */
-    private function handleFound(array $controller, $method, $uri, $query, $payload)
+    private function handleFound(array $controllerDefinition, $method, $uri, $query, $payload)
     {
         try {
             $response = $this->invokeController(
-                $controller,
-                [
-                    $this->buildRequest($method, $uri, $query, $payload)
-                ]
+                $controllerDefinition,
+                $this->buildRequest($method, $uri, $query, $payload)
             );
 
             if ($response instanceof JsonResponse) {
@@ -99,33 +97,30 @@ class Dispatcher
                 'Defined controller action must return Symfony\Component\HttpFoundation\JsonResponse'
             );
         } catch (InvalidControllerDefinitionException $e) {
-            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_CONFLICT, $e->getMessage());
+            return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         } catch (InvalidParameterException $e) {
             return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
     }
 
     /**
-     * @param string[] $controller
-     * @param array $attributes
-     * @return mixed
+     * @param string[] $controllerDefinition
+     * @param Request $request
+     * @return JsonResponse
      * @throws InvalidControllerDefinitionException
      */
-    private function invokeController(array $controller, array $attributes = [])
+    private function invokeController(array $controllerDefinition, Request $request)
     {
-        if (count($controller) != 2) {
+        if (count($controllerDefinition) != 2) {
             throw new InvalidControllerDefinitionException(
                 'Defined controller must contain class name and callback method name'
             );
         }
 
-        return call_user_func_array(
-            [
-                $this->factory->create($controller[0]),
-                $controller[1]
-            ],
-            array_values($attributes)
-        );
+        /** @var Controller $controller */
+        $controller = $this->factory->create($controllerDefinition[0]);
+
+        return $controller->invoke($controllerDefinition[1], $request);
     }
 
     /**

@@ -36,7 +36,7 @@ class ControllerFactory
 
     /**
      * @param string $controllerClassName
-     * @return CollectorController|EventController|WatcherController
+     * @return Controller
      * @throws UnknownTypeException
      */
     public function create($controllerClassName)

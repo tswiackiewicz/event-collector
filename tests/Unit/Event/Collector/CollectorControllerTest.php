@@ -3,6 +3,7 @@ namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Collector;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use TSwiackiewicz\EventsCollector\Event\Collector\CollectorController;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\Unit\Event\ControllerBaseTestCase;
 
@@ -30,9 +31,9 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->getEventCollectors($request);
+        $response = $controller->invoke('getEventCollectors', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -45,7 +46,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorControllerWithoutEventRegistered();
-        $response = $controller->getEventCollectors($request);
+        $response = $controller->invoke('getEventCollectors', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -58,11 +59,10 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->getEventCollectors(
-            $this->createRequestWithInvalidEventType(['collector' => $this->collector])
-        );
+        $response = $controller->invoke('getEventCollectors',
+            $this->createRequestWithInvalidEventType(['collector' => $this->collector]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -75,9 +75,9 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->getEventCollector($request);
+        $response = $controller->invoke('getEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -90,7 +90,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorControllerWithoutEventRegistered();
-        $response = $controller->getEventCollector($request);
+        $response = $controller->invoke('getEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -103,7 +103,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $response = $controller->getEventCollector($request);
+        $response = $controller->invoke('getEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -116,11 +116,10 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->getEventCollector(
-            $this->createRequestWithInvalidEventType(['collector' => $this->collector])
-        );
+        $response = $controller->invoke('getEventCollector',
+            $this->createRequestWithInvalidEventType(['collector' => $this->collector]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -133,9 +132,9 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->unregisterEventCollector($request);
+        $response = $controller->invoke('unregisterEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -148,7 +147,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorControllerWithoutEventRegistered();
-        $response = $controller->unregisterEventCollector($request);
+        $response = $controller->invoke('unregisterEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -161,7 +160,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $response = $controller->unregisterEventCollector($request);
+        $response = $controller->invoke('unregisterEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -174,11 +173,10 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->unregisterEventCollector(
-            $this->createRequestWithInvalidEventType(['collector' => $this->collector])
-        );
+        $response = $controller->invoke('unregisterEventCollector',
+            $this->createRequestWithInvalidEventType(['collector' => $this->collector]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -191,7 +189,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $response = $controller->registerEventCollector($request);
+        $response = $controller->invoke('registerEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_CREATED);
     }
@@ -204,7 +202,7 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorControllerWithoutEventRegistered();
-        $response = $controller->registerEventCollector($request);
+        $response = $controller->invoke('registerEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -217,9 +215,9 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->registerEventCollector($request);
+        $response = $controller->invoke('registerEventCollector', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_CONFLICT);
     }
@@ -232,13 +230,25 @@ class CollectorControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['collector' => $this->collector]);
 
         $controller = $this->createCollectorController();
-        $controller->registerEventCollector($request);
+        $controller->invoke('registerEventCollector', $request);
 
-        $response = $controller->registerEventCollector(
-            $this->createRequestWithInvalidEventType(['collector' => $this->collector])
-        );
+        $response = $controller->invoke('registerEventCollector',
+            $this->createRequestWithInvalidEventType(['collector' => $this->collector]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidControllerDefinitionExceptionWhenInvokedMethodIsNotDefined()
+    {
+        $this->setExpectedException(InvalidControllerDefinitionException::class);
+
+        $request = $this->createRequest(['collector' => $this->collector]);
+
+        $controller = $this->createCollectorController();
+        $controller->invoke('notDefinedMethod', $request);
     }
 
     /**

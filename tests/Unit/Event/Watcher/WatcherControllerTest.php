@@ -4,6 +4,7 @@ namespace TSwiackiewicz\EventsCollector\Tests\Unit\Event\Watcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use TSwiackiewicz\EventsCollector\Counters\InMemoryCounters;
 use TSwiackiewicz\EventsCollector\Event\Watcher\WatcherController;
+use TSwiackiewicz\EventsCollector\Exception\InvalidControllerDefinitionException;
 use TSwiackiewicz\EventsCollector\Settings\InMemorySettings;
 use TSwiackiewicz\EventsCollector\Tests\Unit\Event\ControllerBaseTestCase;
 
@@ -34,9 +35,9 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->getEventWatchers($request);
+        $response = $controller->invoke('getEventWatchers', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -49,7 +50,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherControllerWithoutEventRegistered();
-        $response = $controller->getEventWatchers($request);
+        $response = $controller->invoke('getEventWatchers', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -62,11 +63,10 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->getEventWatchers(
-            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher])
-        );
+        $response = $controller->invoke('getEventWatchers',
+            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -79,9 +79,9 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->getEventWatcher($request);
+        $response = $controller->invoke('getEventWatcher', $request);
 
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
@@ -95,7 +95,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherControllerWithoutEventRegistered();
-        $response = $controller->getEventWatcher($request);
+        $response = $controller->invoke('getEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -108,7 +108,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $response = $controller->getEventWatcher($request);
+        $response = $controller->invoke('getEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -121,11 +121,10 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->getEventWatcher(
-            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher])
-        );
+        $response = $controller->invoke('getEventWatcher',
+            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -138,9 +137,9 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->unregisterEventWatcher($request);
+        $response = $controller->invoke('unregisterEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_OK);
     }
@@ -153,7 +152,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherControllerWithoutEventRegistered();
-        $response = $controller->unregisterEventWatcher($request);
+        $response = $controller->invoke('unregisterEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -166,7 +165,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $response = $controller->unregisterEventWatcher($request);
+        $response = $controller->invoke('unregisterEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -179,11 +178,10 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->unregisterEventWatcher(
-            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher])
-        );
+        $response = $controller->invoke('unregisterEventWatcher',
+            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
     }
@@ -196,7 +194,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $response = $controller->registerEventWatcher($request);
+        $response = $controller->invoke('registerEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_CREATED);
     }
@@ -209,7 +207,7 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherControllerWithoutEventRegistered();
-        $response = $controller->registerEventWatcher($request);
+        $response = $controller->invoke('registerEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_NOT_FOUND);
     }
@@ -222,9 +220,9 @@ class WatcherControllerTest extends ControllerBaseTestCase
         $request = $this->createRequest(['watcher' => $this->watcher]);
 
         $controller = $this->createWatcherController();
-        $controller->registerEventWatcher($request);
+        $controller->invoke('registerEventWatcher', $request);
 
-        $response = $controller->registerEventWatcher($request);
+        $response = $controller->invoke('registerEventWatcher', $request);
 
         $this->assertResponse($response, JsonResponse::HTTP_CONFLICT);
     }
@@ -235,11 +233,23 @@ class WatcherControllerTest extends ControllerBaseTestCase
     public function shouldReturnHttpBadRequestResponseWhenRegisterEventWatcherForInvalidEventType()
     {
         $controller = $this->createWatcherController();
-        $response = $controller->registerEventWatcher(
-            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher])
-        );
+        $response = $controller->invoke('registerEventWatcher',
+            $this->createRequestWithInvalidEventType(['watcher' => $this->watcher]));
 
         $this->assertResponse($response, JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowInvalidControllerDefinitionExceptionWhenInvokedMethodIsNotDefined()
+    {
+        $this->setExpectedException(InvalidControllerDefinitionException::class);
+
+        $request = $this->createRequest(['watcher' => $this->watcher]);
+
+        $controller = $this->createWatcherController();
+        $controller->invoke('notDefinedMethod', $request);
     }
 
     /**
