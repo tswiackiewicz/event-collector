@@ -51,8 +51,7 @@ class EventController implements Controller
      */
     public function invoke($method, Request $request)
     {
-        switch ($method)
-        {
+        switch ($method) {
             case 'getEvents':
                 return $this->getEvents();
 
@@ -181,8 +180,13 @@ class EventController implements Controller
         try {
 
             $event = $this->service->getEvent($request->request->get('event'));
+            $collectedEvent = Event::create(
+                $event->getType(),
+                $event->getCollectors(),
+                $event->getWatchers()
+            );
 
-            $this->service->collectEvent($event, $request->getContent());
+            $this->service->collectEvent($collectedEvent, $request->getContent());
 
         } catch (NotRegisteredException $notRegistered) {
             return JsonErrorResponse::createJsonResponse(JsonResponse::HTTP_NOT_FOUND, $notRegistered->getMessage());
@@ -192,7 +196,7 @@ class EventController implements Controller
 
         return new JsonResponse(
             [
-                '_id' => $event->getId()
+                '_id' => $collectedEvent->getId()
             ],
             JsonResponse::HTTP_OK
         );

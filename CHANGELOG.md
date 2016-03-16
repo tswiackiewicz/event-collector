@@ -5,6 +5,7 @@
 * Collect events with registered collector, syslog / null collectors supported
 * Watch events (and perform action) with registered watcher, single / fields based aggregator supported
 * Fix: only JSON payload accepted
+* Fix: collected event _id generated per request (instead of event definition's _id)
 
 # 0.1.0 - 2016-03-04
 
