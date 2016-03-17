@@ -1,0 +1,57 @@
+vagrant@vm:/var/www/projects/events-collector$ ab -n 100000 -c 25 -p payload.json -T "application/json" "http://127.0.0.1:1234/event/new_event-1/"
+This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 10000 requests
+Completed 20000 requests
+Completed 30000 requests
+Completed 40000 requests
+Completed 50000 requests
+Completed 60000 requests
+Completed 70000 requests
+Completed 80000 requests
+Completed 90000 requests
+Completed 100000 requests
+Finished 100000 requests
+
+
+Server Software:
+Server Hostname:        127.0.0.1
+Server Port:            1234
+
+Document Path:          /event/new_event-1/
+Document Length:        57 bytes
+
+Concurrency Level:      25
+Time taken for tests:   113.198 seconds
+Complete requests:      100000
+Failed requests:        0
+Total transferred:      18800000 bytes
+Total body sent:        30600000
+HTML transferred:       5700000 bytes
+Requests per second:    883.41 [#/sec] (mean)
+Time per request:       28.300 [ms] (mean)
+Time per request:       1.132 [ms] (mean, across all concurrent requests)
+Transfer rate:          162.19 [Kbytes/sec] received
+                        263.99 kb/s sent
+                        426.17 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.1      0       7
+Processing:     7   28   4.9     27     292
+Waiting:        7   28   4.9     27     292
+Total:          7   28   5.0     27     295
+
+Percentage of the requests served within a certain time (ms)
+  50%     27
+  66%     28
+  75%     29
+  80%     29
+  90%     31
+  95%     33
+  98%     37
+  99%     40
+ 100%    295 (longest request)

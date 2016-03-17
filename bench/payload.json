@@ -1,0 +1,3 @@
+{
+    "message": "This is test event message", "date": "2016-03-04 12:00:00", "host": "host-1", "category": "unknown", "field1": "f1", "field2": "f2"
+}
