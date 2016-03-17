@@ -28,5 +28,18 @@ interface Counters
      */
     public function getCounters();
 
+    /**
+     * @param string $key
+     * @throws InvalidParameterException
+     */
+    public function resetCounter($key);
+
+    /**
+     * @param string $key
+     * @param int $value
+     * @throws InvalidParameterException
+     */
+    public function initCounter($key, $value);
+
     public function clear();
 }

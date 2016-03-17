@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+# 0.2.1 - 2016-03-17
+
+* Fix: counters cleared after performed action
+
 # 0.2.0 - 2016-03-16
 
 * Collect events with registered collector, syslog / null collectors supported

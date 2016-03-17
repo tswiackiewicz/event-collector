@@ -103,6 +103,33 @@ class InMemoryCountersTest extends BaseTestCase
     }
 
     /**
+     * @test
+     */
+    public function shouldResetCounter()
+    {
+        $counters = new InMemoryCounters();
+
+        $counters->initCounter('key1', 5);
+        $counters->resetCounter('key1');
+
+        $this->assertEquals(0, $counters->getCounter('key1'));
+    }
+
+    /**
+     * @test
+     */
+    public function shouldInitCounter()
+    {
+        $key = 'key1';
+        $value = 100;
+
+        $counters = new InMemoryCounters();
+        $counters->initCounter($key, $value);
+
+        $this->assertEquals($value, $counters->getCounter($key));
+    }
+
+    /**
      * @return array
      */
     public function getInvalidCounterKey()

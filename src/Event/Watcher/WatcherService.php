@@ -131,5 +131,7 @@ class WatcherService
         $handler->handle(
             sprintf(self::ACTION_MESSAGE, $watcher->getEvent(), $counter)
         );
+
+        $this->counters->initCounter($watcher->buildAggregationKey(), 1);
     }
 }
