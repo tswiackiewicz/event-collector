@@ -1,6 +1,5 @@
 ## TODO
 
-* clear counters after performed action -> 0.3.0
 * documentation -> 0.3.0
 * postman test case scenarios -> 0.3.0
 * server activities log - Monolog -> 0.3.0

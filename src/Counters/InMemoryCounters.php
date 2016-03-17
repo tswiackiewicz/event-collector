@@ -66,6 +66,27 @@ class InMemoryCounters implements Counters
         return $this->counters;
     }
 
+    /**
+     * @param string $key
+     * @throws InvalidParameterException
+     */
+    public function resetCounter($key)
+    {
+        $this->initCounter($key, 0);
+    }
+
+    /**
+     * @param string $key
+     * @param int $value
+     * @throws InvalidParameterException
+     */
+    public function initCounter($key, $value)
+    {
+        $this->validateCounterKey($key);
+
+        $this->counters[$key] = $value;
+    }
+
     public function clear()
     {
         $this->counters = [];
