@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-# 0.3.0 - 2016-03-??
+# 0.2.1 - 2016-03-17
 
 * Fix: counters cleared after performed action
 
